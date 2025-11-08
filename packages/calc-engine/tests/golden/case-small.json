@@ -1,0 +1,129 @@
+{
+  "description": "Compact ranch home",
+  "inputs": {
+    "climateZone": "4A",
+    "designTemperatureDifference": 25,
+    "buildingVolume": 8000,
+    "infiltrationClass": "average",
+    "windSpeed": 7,
+    "stackEffect": 12,
+    "solarFactors": {
+      "orientationFactors": {
+        "north": 0.6,
+        "south": 1.1,
+        "east": 0.9,
+        "west": 1.0,
+        "northeast": 0.7,
+        "southeast": 1.0,
+        "southwest": 1.05,
+        "northwest": 0.65
+      },
+      "coolingLoadFactors": {
+        "15": 1.1
+      }
+    },
+    "walls": [
+      {
+        "id": "north-wall",
+        "area": 200,
+        "rValue": 13,
+        "orientation": "north"
+      },
+      {
+        "id": "south-wall",
+        "area": 200,
+        "rValue": 13,
+        "orientation": "south"
+      },
+      {
+        "id": "east-wall",
+        "area": 150,
+        "rValue": 13,
+        "orientation": "east"
+      },
+      {
+        "id": "west-wall",
+        "area": 150,
+        "rValue": 13,
+        "orientation": "west"
+      }
+    ],
+    "windows": [
+      {
+        "id": "south-windows",
+        "area": 60,
+        "rValue": 3,
+        "shgc": 0.6,
+        "orientation": "south"
+      },
+      {
+        "id": "north-windows",
+        "area": 40,
+        "rValue": 3,
+        "shgc": 0.6,
+        "orientation": "north"
+      }
+    ],
+    "doors": [
+      {
+        "id": "front-door",
+        "area": 20,
+        "rValue": 5,
+        "orientation": "south"
+      }
+    ],
+    "roof": {
+      "id": "roof",
+      "area": 1200,
+      "rValue": 30
+    },
+    "foundation": {
+      "id": "slab",
+      "area": 1200,
+      "rValue": 10
+    },
+    "occupancy": {
+      "count": 3,
+      "sensibleGainPerPerson": 230,
+      "latentGainPerPerson": 190
+    },
+    "lighting": {
+      "totalWattage": 1200
+    },
+    "appliances": [
+      {
+        "type": "refrigerator",
+        "wattage": 400,
+        "usageFactor": 0.4
+      },
+      {
+        "type": "dishwasher",
+        "wattage": 1800,
+        "usageFactor": 0.1
+      }
+    ],
+    "ductwork": {
+      "location": "unconditioned",
+      "insulation": "standard"
+    },
+    "diversityFactors": {
+      "occupancy": 0.8,
+      "lighting": 0.9,
+      "appliances": {
+        "refrigerator": 1,
+        "dishwasher": 0.7
+      }
+    }
+  },
+  "expected": {
+    "cooling": {
+      "total": 13168,
+      "sensible": 11392,
+      "latent": 688,
+      "tonnage": 1.5
+    },
+    "heating": {
+      "total": 8491
+    }
+  }
+}
