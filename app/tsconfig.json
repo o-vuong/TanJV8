@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@calc-engine": ["../packages/calc-engine/src"],
+      "@ui": ["../packages/ui/src"]
+    }
+  }
+}

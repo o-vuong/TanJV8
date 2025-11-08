@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./app/src/*"],
+      "@calc-engine": ["./packages/calc-engine/src"],
+      "@ui": ["./packages/ui/src"]
+    }
+  },
+  "include": ["app/**/*.ts", "app/**/*.tsx", "packages/**/*.ts", "packages/**/*.tsx"],
+  "exclude": ["node_modules"]
+}
