@@ -1,7 +1,14 @@
 import * as Sentry from '@sentry/tanstackstart-react'
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
-  // Adds request headers and IP for users, for more info visit:
-  // https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/configuration/options/#sendDefaultPii
-  sendDefaultPii: true,
-})
+
+let dsn = process.env.SENTRY_DSN ?? process.env.VITE_SENTRY_DSN
+
+if (!dsn && typeof import.meta !== 'undefined' && import.meta.env) {
+  dsn = import.meta.env.VITE_SENTRY_DSN
+}
+
+if (dsn) {
+  Sentry.init({
+    dsn,
+    sendDefaultPii: true,
+  })
+}
