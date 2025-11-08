@@ -9,6 +9,11 @@ const envSchema = z.object({
   LOGROCKET_APP_ID: z.string().optional(),
   LHCI_GITHUB_APP_TOKEN: z.string().optional(),
   PERCY_TOKEN: z.string().optional(),
+  ENABLE_OAUTH: z.coerce.boolean().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
 })
 
 const parsed = envSchema.safeParse({
@@ -20,6 +25,11 @@ const parsed = envSchema.safeParse({
   LOGROCKET_APP_ID: process.env.LOGROCKET_APP_ID,
   LHCI_GITHUB_APP_TOKEN: process.env.LHCI_GITHUB_APP_TOKEN,
   PERCY_TOKEN: process.env.PERCY_TOKEN,
+  ENABLE_OAUTH: process.env.ENABLE_OAUTH,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+  GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
 })
 
 if (!parsed.success) {
