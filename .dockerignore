@@ -1,0 +1,11 @@
+node_modules
+pnpm-lock.yaml
+app/node_modules
+app/.output
+app/dist
+packages/**/dist
+.git
+.gitignore
+.env
+.env.local
+Dockerfile

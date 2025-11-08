@@ -1,0 +1,10 @@
+{
+  "name": "manualj-monorepo",
+  "private": true,
+  "scripts": {
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f postgres",
+    "docker:destroy": "docker compose down -v"
+  }
+}

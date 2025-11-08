@@ -1,0 +1,30 @@
+import { z } from 'zod'
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  DATABASE_URL: z.string().url(),
+  BETTER_AUTH_SECRET: z.string().min(32),
+  BETTER_AUTH_URL: z.string().url(),
+  SENTRY_DSN: z.string().url().optional(),
+  LOGROCKET_APP_ID: z.string().optional(),
+  LHCI_GITHUB_APP_TOKEN: z.string().optional(),
+  PERCY_TOKEN: z.string().optional(),
+})
+
+const parsed = envSchema.safeParse({
+  NODE_ENV: process.env.NODE_ENV,
+  DATABASE_URL: process.env.DATABASE_URL,
+  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+  SENTRY_DSN: process.env.SENTRY_DSN,
+  LOGROCKET_APP_ID: process.env.LOGROCKET_APP_ID,
+  LHCI_GITHUB_APP_TOKEN: process.env.LHCI_GITHUB_APP_TOKEN,
+  PERCY_TOKEN: process.env.PERCY_TOKEN,
+})
+
+if (!parsed.success) {
+  console.error('❌ Invalid environment variables', parsed.error.flatten().fieldErrors)
+  throw new Error('Invalid environment variables')
+}
+
+export const env = parsed.data
