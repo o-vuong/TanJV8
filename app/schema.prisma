@@ -7,8 +7,168 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Todo {
-  id        Int      @id @default(autoincrement())
-  title     String
-  createdAt DateTime @default(now())
+enum CalculationStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String?
+  image         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  // Auth relations
+  accounts      Account[]
+  sessions      Session[]
+  // Domain relations
+  projects      Project[]
+  calculations  Calculation[]
+  groups        GroupMember[]
+  // Preferences
+  preferredUnit String?     // e.g. "imperial" or "metric"
+
+  @@index([email])
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  access_token      String?
+  refresh_token     String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  expires      DateTime
+  sessionToken String   @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expires])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  createdAt  DateTime @default(now())
+
+  @@unique([identifier, token])
+  @@index([expires])
+}
+
+model Group {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  ownerId     String
+  owner       User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  projects    Project[]
+
+  @@index([ownerId])
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  role      String   // e.g. "admin" | "member"
+  joinedAt  DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
+model Project {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId       String?
+  group         Group?        @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  calculations  Calculation[]
+
+  locationZip   String?
+  latitude      Float?
+  longitude     Float?
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([name])
+}
+
+model Calculation {
+  id             String            @id @default(cuid())
+  projectId      String
+  userId         String
+  status         CalculationStatus @default(ACTIVE)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  // Input snapshot JSON (envelope, infiltration, internal gains, ducts)
+  inputEnvelope  Json
+  inputInfiltration Json
+  inputInternal  Json
+  inputDucts     Json
+
+  // Result snapshot JSON (cooling, heating, detailed components)
+  result         Json?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ClimateRef {
+  id            Int      @id @default(autoincrement())
+  zip           String   @unique
+  city          String
+  state         String
+  latitude      Float
+  longitude     Float
+  coolingDesignF Float   // Outdoor cooling design temperature (°F)
+  heatingDesignF Float   // Outdoor heating design temperature (°F)
+  humidityRatio  Float?  // Typical humidity ratio
+  elevationFt    Int?
+
+  @@index([state])
+  @@index([city])
+}
+
+model MaterialConstant {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique
+  rValue   Float
+  uValue   Float   // Derived or stored for convenience
+  category String? // e.g. "wall", "roof", "window", "door", etc.
+
+  @@index([category])
 }
