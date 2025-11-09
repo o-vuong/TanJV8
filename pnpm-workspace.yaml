@@ -1,3 +1,7 @@
 packages:
-  - 'app'
-  - 'packages/*'
+  - app
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - prisma
