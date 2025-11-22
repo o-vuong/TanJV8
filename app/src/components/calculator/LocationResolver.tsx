@@ -22,13 +22,14 @@ const locationSchema = z.object({
 
 type LocationResolverProps = {
 	onComplete: (data: ClimateData) => void;
+	demoMode?: boolean;
 };
 
-export function LocationResolver({ onComplete }: LocationResolverProps) {
-	const [submittedZip, setSubmittedZip] = useState<string | null>(null);
+export function LocationResolver({ onComplete, demoMode = false }: LocationResolverProps) {
+	const [submittedZip, setSubmittedZip] = useState<string | null>(demoMode ? "30301" : null);
 	const form = useForm({
 		defaultValues: {
-			zipCode: "",
+			zipCode: demoMode ? "30301" : "",
 		},
 		validatorAdapter: zodValidator,
 		onSubmit: ({ value }) => {

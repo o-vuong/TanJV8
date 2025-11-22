@@ -153,6 +153,7 @@ function App() {
 						</Link>
 						<Link
 							to="/calculator"
+							search={{ demo: true }}
 							className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-gray-300 font-semibold rounded-lg transition-colors border border-slate-700 hover:border-blue-500/50"
 						>
 							View Example
