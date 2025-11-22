@@ -229,7 +229,7 @@ Updated `app/package.json` with:
 
 ## Next Steps
 
-1. **Database Seeding**: Populate ClimateRef table with actual ASHRAE climate data for US ZIP codes
+1. **Database Seeding**: Populate ClimateRef table with actual ACCA Manual J climate data for US ZIP codes
 2. **Production Deployment**: Set up hosting (Vercel, Netlify, or custom)
 3. **Environment Variables**: Configure production secrets
 4. **Documentation**: Update README with project-specific information
