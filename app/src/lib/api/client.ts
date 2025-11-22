@@ -25,14 +25,24 @@ function buildUrl(
 	path: string,
 	params?: RequestOptions["params"],
 ) {
-	const url = new URL(path, baseUrl);
+	// Properly concatenate base URL and path
+	const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+	const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+	const fullPath = `${normalizedBase}${normalizedPath}`;
+	
+	// Build query string if params exist
 	if (params) {
+		const searchParams = new URLSearchParams();
 		Object.entries(params).forEach(([key, value]) => {
-			if (value === undefined) return;
-			url.searchParams.set(key, String(value));
+			if (value !== undefined) {
+				searchParams.set(key, String(value));
+			}
 		});
+		const queryString = searchParams.toString();
+		return queryString ? `${fullPath}?${queryString}` : fullPath;
 	}
-	return url.toString();
+	
+	return fullPath;
 }
 
 async function resolveHeaders(getHeaders?: ApiClientOptions["getHeaders"]) {
