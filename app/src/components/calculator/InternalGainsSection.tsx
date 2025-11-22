@@ -1,0 +1,41 @@
+import { Users } from "lucide-react";
+import type { FormSectionProps } from "./form-utils";
+import { renderNumberField } from "./form-utils";
+
+export function InternalGainsSection({ form, fieldValidators }: FormSectionProps) {
+	return (
+		<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
+			<div className="flex items-center gap-2 text-white font-semibold">
+				<Users className="w-5 h-5 text-blue-400" />
+				<h3>Internal gains</h3>
+			</div>
+			<div className="grid gap-4 sm:grid-cols-3">
+				{renderNumberField(
+					form,
+					fieldValidators,
+					"occupants",
+					"Occupants",
+					"Number of people in the building",
+					{ min: 0, step: 1 }
+				)}
+				{renderNumberField(
+					form,
+					fieldValidators,
+					"lighting",
+					"Lighting",
+					"Total lighting load in watts",
+					{ min: 0, step: 10 }
+				)}
+				{renderNumberField(
+					form,
+					fieldValidators,
+					"appliances",
+					"Appliances",
+					"Total appliance load in watts",
+					{ min: 0, step: 10 }
+				)}
+			</div>
+		</section>
+	);
+}
+

@@ -14,14 +14,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../ui/card";
-import {
-	BuildingDimensionsSection,
-	BuildingEnvelopeSection,
-	InfiltrationSection,
-	InternalGainsSection,
-	DuctSystemSection,
-	ClimatePreferencesSection,
-} from "./FormSections";
+import { BuildingDimensionsSection } from "./BuildingDimensionsSection";
+import { BuildingEnvelopeSection } from "./BuildingEnvelopeSection";
+import { InfiltrationSection } from "./InfiltrationSection";
+import { InternalGainsSection } from "./InternalGainsSection";
+import { DuctSystemSection } from "./DuctSystemSection";
+import { ClimatePreferencesSection } from "./ClimatePreferencesSection";
 
 const schema = z.object({
 	area: z.coerce.number().positive("Area must be positive"),

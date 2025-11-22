@@ -18,8 +18,20 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
 const locationSchema = z.object({
-	zipCode: z.string().regex(/^\d{5}$/u, "ZIP code must be 5 digits"),
+	zipCode: z
+		.string()
+		.min(1, "ZIP code is required")
+		.regex(/^\d{5}$/u, "ZIP code must be 5 digits"),
 });
+
+// Helper to extract error message from Zod error or string
+const getErrorMessage = (error: unknown): string => {
+	if (typeof error === 'string') return error;
+	if (error && typeof error === 'object' && 'message' in error) {
+		return String(error.message);
+	}
+	return 'Invalid value';
+};
 
 type LocationResolverProps = {
 	onComplete: (data: ClimateData) => void;
@@ -75,22 +87,28 @@ export function LocationResolver({ onComplete, demoMode = false }: LocationResol
 					>
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>ZIP code</Label>
+								<Label htmlFor={field.name}>ZIP Code</Label>
 								<Input
 									id={field.name}
 									inputMode="numeric"
 									maxLength={5}
 									value={field.state.value}
-									onChange={(event) =>
-										field.handleChange(event.target.value.slice(0, 5))
-									}
+									onChange={(event) => {
+										// Only allow digits, limit to 5 characters
+										const value = event.target.value.replace(/\D/g, '').slice(0, 5);
+										field.handleChange(value);
+									}}
 									onBlur={field.handleBlur}
-									placeholder="e.g. 30301"
+									placeholder="e.g. 91730"
 									autoFocus
+									className="w-full"
 								/>
+								<p className="text-xs text-gray-400">
+									ZIP code where you are building
+								</p>
 								{field.state.meta.errors?.[0] && (
 									<p className="text-sm text-destructive">
-										{field.state.meta.errors[0]}
+										{getErrorMessage(field.state.meta.errors[0])}
 									</p>
 								)}
 							</div>
