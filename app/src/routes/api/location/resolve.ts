@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { prisma } from "../../../db";
+import { fetchClimateDataForZip } from "../../lib/climate/fetch-climate";
 
 export const Route = createFileRoute("/api/location/resolve")({
 	server: {
@@ -31,20 +32,41 @@ export const Route = createFileRoute("/api/location/resolve")({
 				}
 
 				try {
-					const climateRef = await prisma.climateRef.findUnique({
+					// First, check if we have this ZIP code in the database
+					let climateRef = await prisma.climateRef.findUnique({
 						where: { zipCode },
 					});
 
+					// If not in database, fetch from external API and save it
 					if (!climateRef) {
-						return new Response(
-							JSON.stringify({
-								error: `Climate data not found for ZIP code ${zipCode}`,
-							}),
-							{
-								status: 404,
-								headers: { "Content-Type": "application/json" },
-							},
-						);
+						try {
+							const climateData = await fetchClimateDataForZip(zipCode);
+							
+							// Save to database for future use
+							climateRef = await prisma.climateRef.create({
+								data: {
+									zipCode,
+									revision: new Date().getFullYear(),
+									variables: {
+										summerDesignTemp: climateData.summerDesignTemp,
+										winterDesignTemp: climateData.winterDesignTemp,
+										latitude: climateData.latitude,
+										longitude: climateData.longitude,
+									},
+								},
+							});
+						} catch (fetchError) {
+							console.error("Error fetching climate data:", fetchError);
+							return new Response(
+								JSON.stringify({
+									error: `Unable to resolve climate data for ZIP code ${zipCode}. Please try again or contact support.`,
+								}),
+								{
+									status: 500,
+									headers: { "Content-Type": "application/json" },
+								},
+							);
+						}
 					}
 
 					// Return climate data in the expected format
@@ -62,7 +84,10 @@ export const Route = createFileRoute("/api/location/resolve")({
 				} catch (error) {
 					console.error("Error resolving location:", error);
 					return new Response(
-						JSON.stringify({ error: "Internal server error" }),
+						JSON.stringify({ 
+							error: "Internal server error",
+							details: error instanceof Error ? error.message : "Unknown error",
+						}),
 						{
 							status: 500,
 							headers: { "Content-Type": "application/json" },

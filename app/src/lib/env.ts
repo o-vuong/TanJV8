@@ -16,6 +16,7 @@ const envSchema = z.object({
 	GOOGLE_CLIENT_SECRET: z.string().optional(),
 	GITHUB_CLIENT_ID: z.string().optional(),
 	GITHUB_CLIENT_SECRET: z.string().optional(),
+	OPENCAGE_API_KEY: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse({
@@ -32,6 +33,7 @@ const parsed = envSchema.safeParse({
 	GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 	GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
 	GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+	OPENCAGE_API_KEY: process.env.OPENCAGE_API_KEY,
 });
 
 if (!parsed.success) {
