@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
+import { MapPin, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import type { ClimateData } from "../../lib/queries/location";
@@ -49,10 +50,15 @@ export function LocationResolver({ onComplete, demoMode = false }: LocationResol
 	}, [data, submittedZip, onComplete]);
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Step 1: Locate the property</CardTitle>
-				<CardDescription>
+		<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
+			<CardHeader className="border-b border-slate-700 bg-slate-900/50">
+				<CardTitle className="text-2xl flex items-center gap-3">
+					<div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+						<MapPin className="w-6 h-6 text-white" />
+					</div>
+					Step 1: Locate the property
+				</CardTitle>
+				<CardDescription className="text-gray-400 mt-2">
 					Enter the project ZIP code to load climate design conditions.
 				</CardDescription>
 			</CardHeader>
@@ -62,7 +68,7 @@ export function LocationResolver({ onComplete, demoMode = false }: LocationResol
 					form.handleSubmit();
 				}}
 			>
-				<CardContent className="space-y-4">
+				<CardContent className="space-y-6 p-6">
 					<form.Field
 						name="zipCode"
 						validators={{ onChange: locationSchema.shape.zipCode }}
@@ -91,52 +97,59 @@ export function LocationResolver({ onComplete, demoMode = false }: LocationResol
 						)}
 					</form.Field>
 
-					{error && <p className="text-sm text-destructive">{error.message}</p>}
+					{error && (
+						<div className="p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 flex items-center gap-3">
+							<div className="w-2 h-2 bg-red-500 rounded-full" />
+							<p className="text-sm font-medium">{error.message}</p>
+						</div>
+					)}
 
 					{isLoading && (
-						<p className="text-sm text-muted-foreground">
-							Resolving climate data…
-						</p>
+						<div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/50 text-blue-400 flex items-center gap-3">
+							<Loader2 className="w-4 h-4 animate-spin" />
+							<p className="text-sm font-medium">Resolving climate data…</p>
+						</div>
 					)}
 
 					{data && (
-						<dl className="grid gap-2 rounded-lg border bg-muted/40 p-4 text-sm sm:grid-cols-2">
-							<div>
-								<dt className="text-muted-foreground">Summer design (°F)</dt>
-								<dd className="font-medium">
-									{data.variables.summerDesignTemp}
+						<dl className="grid gap-3 rounded-lg border border-slate-700 bg-slate-800/50 p-5 text-sm sm:grid-cols-2">
+							<div className="space-y-1">
+								<dt className="text-xs text-gray-500 uppercase tracking-wide">Summer design temp</dt>
+								<dd className="text-xl font-bold text-blue-400">
+									{data.variables.summerDesignTemp}°F
 								</dd>
 							</div>
-							<div>
-								<dt className="text-muted-foreground">Winter design (°F)</dt>
-								<dd className="font-medium">
-									{data.variables.winterDesignTemp}
+							<div className="space-y-1">
+								<dt className="text-xs text-gray-500 uppercase tracking-wide">Winter design temp</dt>
+								<dd className="text-xl font-bold text-cyan-400">
+									{data.variables.winterDesignTemp}°F
 								</dd>
 							</div>
-							<div>
-								<dt className="text-muted-foreground">Latitude</dt>
-								<dd className="font-medium">
-									{data.variables.latitude.toFixed(4)}
+							<div className="space-y-1">
+								<dt className="text-xs text-gray-500 uppercase tracking-wide">Latitude</dt>
+								<dd className="text-base font-medium text-white">
+									{data.variables.latitude.toFixed(4)}°
 								</dd>
 							</div>
-							<div>
-								<dt className="text-muted-foreground">Longitude</dt>
-								<dd className="font-medium">
-									{data.variables.longitude.toFixed(4)}
+							<div className="space-y-1">
+								<dt className="text-xs text-gray-500 uppercase tracking-wide">Longitude</dt>
+								<dd className="text-base font-medium text-white">
+									{data.variables.longitude.toFixed(4)}°
 								</dd>
 							</div>
 						</dl>
 					)}
 				</CardContent>
-				<CardFooter className="flex justify-end">
+				<CardFooter className="flex justify-end border-t border-slate-700 bg-slate-900/50 p-6">
 					<Button
 						type="submit"
 						disabled={
 							form.state.isValidating || form.state.isSubmitting || isLoading
 						}
+						className="px-8 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
 					>
 						{data && /^\d{5}$/u.test(currentZip ?? "")
-							? "Continue"
+							? "Continue →"
 							: "Resolve location"}
 					</Button>
 				</CardFooter>
