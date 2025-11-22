@@ -1,0 +1,57 @@
+{
+  "description": "Simplified Manual J test case - medium home",
+  "inputs": {
+    "area": 2000,
+    "climateRefId": "test-climate-1",
+    "envelope": {
+      "wallArea": 1500,
+      "wallR": 13,
+      "roofArea": 2000,
+      "roofR": 38,
+      "windowArea": 300,
+      "windowU": 0.35,
+      "windowSHGC": 0.3
+    },
+    "infiltration": {
+      "class": "average",
+      "volume": 16000
+    },
+    "internal": {
+      "occupants": 4,
+      "lighting": 2000,
+      "appliances": 1500
+    },
+    "ducts": {
+      "location": "unconditioned",
+      "efficiency": 0.85
+    },
+    "climate": {
+      "summerDesignTemp": 95,
+      "winterDesignTemp": 20,
+      "indoorTemp": 75
+    }
+  },
+  "expected": {
+    "sensible": {
+      "min": 30000,
+      "max": 40000
+    },
+    "latent": {
+      "min": 600,
+      "max": 1200
+    },
+    "total": {
+      "min": 35000,
+      "max": 48000
+    },
+    "tonnage": {
+      "min": 3.0,
+      "max": 4.5
+    },
+    "cfm": {
+      "min": 1200,
+      "max": 1800
+    }
+  }
+}
+

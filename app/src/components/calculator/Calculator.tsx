@@ -1,4 +1,4 @@
-import type { BuildingInputs, CalculationResults } from "@manualj/calc-engine";
+import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
 import { useState } from "react";
 import type { ClimateData } from "../../lib/queries/location";
 import { InputWizard } from "./InputWizard";
@@ -9,8 +9,8 @@ import { type Step, StepIndicator } from "./StepIndicator";
 export function Calculator() {
 	const [step, setStep] = useState<Step>("location");
 	const [climateData, setClimateData] = useState<ClimateData | null>(null);
-	const [inputs, setInputs] = useState<BuildingInputs | null>(null);
-	const [results, setResults] = useState<CalculationResults | null>(null);
+	const [inputs, setInputs] = useState<ManualJInputs | null>(null);
+	const [results, setResults] = useState<ManualJResults | null>(null);
 
 	const handleLocationComplete = (data: ClimateData) => {
 		setClimateData(data);
@@ -18,8 +18,8 @@ export function Calculator() {
 	};
 
 	const handleInputsComplete = (
-		nextInputs: BuildingInputs,
-		nextResults: CalculationResults,
+		nextInputs: ManualJInputs,
+		nextResults: ManualJResults,
 	) => {
 		setInputs(nextInputs);
 		setResults(nextResults);

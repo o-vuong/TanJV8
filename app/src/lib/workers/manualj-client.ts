@@ -1,4 +1,4 @@
-import type { BuildingInputs, CalculationResults } from "@manualj/calc-engine";
+import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
 import type {
 	WorkerMessage,
 	WorkerResponse,
@@ -9,7 +9,7 @@ export class ManualJWorkerClient {
 	private pending = new Map<
 		string,
 		{
-			resolve: (value: CalculationResults) => void;
+			resolve: (value: ManualJResults) => void;
 			reject: (reason: Error) => void;
 			onProgress?: (progress: number) => void;
 			timeoutId: ReturnType<typeof setTimeout>;
@@ -30,16 +30,16 @@ export class ManualJWorkerClient {
 	}
 
 	calculate(
-		inputs: BuildingInputs,
+		inputs: ManualJInputs,
 		options: {
 			timeoutMs?: number;
 			onProgress?: (progress: number) => void;
 		} = {},
-	): Promise<CalculationResults> {
+	): Promise<ManualJResults> {
 		const id = crypto.randomUUID();
 		const timeoutMs = options.timeoutMs ?? 30_000;
 
-		return new Promise<CalculationResults>((resolve, reject) => {
+		return new Promise<ManualJResults>((resolve, reject) => {
 			const timeoutId = setTimeout(() => {
 				this.cancel(id);
 				reject(new Error("Calculation timeout"));
