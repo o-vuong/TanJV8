@@ -1,5 +1,6 @@
 import type { UseFormReturn } from "@tanstack/react-form";
 import type { InputHTMLAttributes } from "react";
+import { useState } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 
@@ -40,55 +41,116 @@ export const renderNumberField = (
 	label: string,
 	description?: string,
 	props?: InputHTMLAttributes<HTMLInputElement>,
-) => (
-	<form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
-		{(field) => {
-			const defaultValue = form.options.defaultValues?.[name] ?? 0;
-			const displayValue = field.state.value ?? defaultValue;
-			
-			return (
-				<div className="space-y-2">
-					<Label htmlFor={String(name)}>{label}</Label>
-					<Input
-						id={String(name)}
-						type="number"
-						value={displayValue}
-						onChange={(event) => {
-							const value = event.target.value;
-							if (value === "" || value === "-" || value === ".") {
-								field.handleChange(defaultValue);
-								return;
-							}
-							const numValue = Number(value);
-							if (!isNaN(numValue)) {
-								field.handleChange(numValue);
-							}
-						}}
-						onBlur={(event) => {
-							const value = event.target.value;
-							if (value === "" || isNaN(Number(value))) {
-								field.handleChange(defaultValue);
-							}
-							field.handleBlur();
-						}}
-						className="w-full"
-						{...props}
+) => {
+	return (
+		<form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
+			{(field) => {
+				const defaultValue = form.options.defaultValues?.[name] ?? 0;
+				const formValue = field.state.value ?? defaultValue;
+				
+				return (
+					<NumberInputField
+						field={field}
+						formValue={formValue}
+						defaultValue={defaultValue}
+						name={String(name)}
+						label={label}
+						description={description}
+						props={props}
 					/>
-					{description && (
-						<p className="text-xs text-gray-400">
-							{description}
-						</p>
-					)}
-					{field.state.meta.errors?.[0] && (
-						<p className="text-sm text-destructive">
-							{getErrorMessage(field.state.meta.errors[0])}
-						</p>
-					)}
-				</div>
-			);
-		}}
-	</form.Field>
-);
+				);
+			}}
+		</form.Field>
+	);
+};
+
+// Separate component to manage local input state
+function NumberInputField({
+	field,
+	formValue,
+	defaultValue,
+	name,
+	label,
+	description,
+	props,
+}: {
+	field: any;
+	formValue: number;
+	defaultValue: number;
+	name: string;
+	label: string;
+	description?: string;
+	props?: InputHTMLAttributes<HTMLInputElement>;
+}) {
+	const [localValue, setLocalValue] = useState<string>(String(formValue));
+	const [isFocused, setIsFocused] = useState(false);
+
+	// Sync local value when form value changes externally (when not focused)
+	useEffect(() => {
+		if (!isFocused) {
+			setLocalValue(String(formValue));
+		}
+	}, [formValue, isFocused]);
+
+	return (
+		<div className="space-y-2">
+			<Label htmlFor={name}>{label}</Label>
+			<Input
+				id={name}
+				type="number"
+				value={isFocused ? localValue : String(formValue)}
+				onChange={(event) => {
+					const value = event.target.value;
+					setLocalValue(value);
+					
+					// Update form value if it's a valid number
+					if (value !== "" && value !== "-" && value !== "." && value !== "e" && value !== "E") {
+						const numValue = Number(value);
+						if (!isNaN(numValue) && isFinite(numValue)) {
+							field.handleChange(numValue);
+						}
+					}
+				}}
+				onFocus={() => {
+					setIsFocused(true);
+					setLocalValue(String(formValue));
+				}}
+				onBlur={(event) => {
+					setIsFocused(false);
+					const value = event.target.value;
+					
+					// On blur, ensure we have a valid value
+					if (value === "" || value === "-" || value === "." || isNaN(Number(value)) || !isFinite(Number(value))) {
+						field.handleChange(defaultValue);
+						setLocalValue(String(defaultValue));
+					} else {
+						const numValue = Number(value);
+						if (!isNaN(numValue) && isFinite(numValue)) {
+							field.handleChange(numValue);
+							setLocalValue(String(numValue));
+						} else {
+							field.handleChange(defaultValue);
+							setLocalValue(String(defaultValue));
+						}
+					}
+					field.handleBlur();
+				}}
+				className="w-full"
+				{...props}
+			/>
+			{description && (
+				<p className="text-xs text-gray-400">
+					{description}
+				</p>
+			)}
+			{field.state.meta.errors?.[0] && (
+				<p className="text-sm text-destructive">
+					{getErrorMessage(field.state.meta.errors[0])}
+				</p>
+			)}
+		</div>
+	);
+}
 
 export interface FormSectionProps {
 	form: UseFormReturn<FormValues, any>;
