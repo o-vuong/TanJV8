@@ -1,4 +1,4 @@
-import type { BuildingInputs, CalculationResults } from "@manualj/calc-engine";
+import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
 import {
 	createColumnHelper,
 	flexRender,
@@ -17,8 +17,8 @@ import {
 } from "../ui/table";
 
 interface ResultsDisplayProps {
-	inputs: BuildingInputs;
-	results: CalculationResults;
+	inputs: ManualJInputs;
+	results: ManualJResults;
 	onBack: () => void;
 	onStartNew: () => void;
 }
@@ -55,39 +55,38 @@ export function ResultsDisplay({
 	const breakdownData: BreakdownRow[] = [
 		{
 			component: "Wall conduction",
-			btuPerHour: results.coolingLoad.breakdown.conduction,
-			percentage:
-				(results.coolingLoad.breakdown.conduction / results.coolingLoad.total) *
-				100,
+			btuPerHour: results.breakdown.conduction.walls,
+			percentage: (results.breakdown.conduction.walls / results.total) * 100,
+		},
+		{
+			component: "Roof conduction",
+			btuPerHour: results.breakdown.conduction.roof,
+			percentage: (results.breakdown.conduction.roof / results.total) * 100,
+		},
+		{
+			component: "Window conduction",
+			btuPerHour: results.breakdown.conduction.windows,
+			percentage: (results.breakdown.conduction.windows / results.total) * 100,
 		},
 		{
 			component: "Solar gain",
-			btuPerHour: results.coolingLoad.breakdown.solar,
-			percentage:
-				(results.coolingLoad.breakdown.solar / results.coolingLoad.total) * 100,
+			btuPerHour: results.breakdown.solar,
+			percentage: (results.breakdown.solar / results.total) * 100,
 		},
 		{
 			component: "Infiltration",
-			btuPerHour: results.coolingLoad.breakdown.infiltration,
-			percentage:
-				(results.coolingLoad.breakdown.infiltration /
-					results.coolingLoad.total) *
-				100,
+			btuPerHour: results.breakdown.infiltration,
+			percentage: (results.breakdown.infiltration / results.total) * 100,
 		},
 		{
 			component: "Internal gains",
-			btuPerHour: results.coolingLoad.breakdown.internalGains,
-			percentage:
-				(results.coolingLoad.breakdown.internalGains /
-					results.coolingLoad.total) *
-				100,
+			btuPerHour: results.breakdown.internalGains,
+			percentage: (results.breakdown.internalGains / results.total) * 100,
 		},
 		{
 			component: "Duct losses",
-			btuPerHour: results.coolingLoad.breakdown.ductLosses,
-			percentage:
-				(results.coolingLoad.breakdown.ductLosses / results.coolingLoad.total) *
-				100,
+			btuPerHour: results.breakdown.ductLosses,
+			percentage: (results.breakdown.ductLosses / results.total) * 100,
 		},
 	];
 
@@ -97,6 +96,11 @@ export function ResultsDisplay({
 		getCoreRowModel: getCoreRowModel(),
 	});
 
+	const totalConduction =
+		results.breakdown.conduction.walls +
+		results.breakdown.conduction.roof +
+		results.breakdown.conduction.windows;
+
 	return (
 		<div className="space-y-6">
 			<Card>
@@ -105,35 +109,32 @@ export function ResultsDisplay({
 				</CardHeader>
 				<CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					<SummaryItem
-						label="Total cooling load"
-						value={`${results.coolingLoad.total.toLocaleString()} BTU/h`}
+						label="Sensible load"
+						value={`${results.sensible.toLocaleString()} BTU/h`}
 					/>
 					<SummaryItem
-						label="Total heating load"
-						value={`${results.heatingLoad.total.toLocaleString()} BTU/h`}
+						label="Latent load"
+						value={`${results.latent.toLocaleString()} BTU/h`}
+					/>
+					<SummaryItem
+						label="Total cooling load"
+						value={`${results.total.toLocaleString()} BTU/h`}
 					/>
 					<SummaryItem
 						label="System size"
-						value={`${results.equipmentSizing.cooling.tonnage.toFixed(1)} tons`}
+						value={`${results.tonnage.toFixed(1)} tons`}
 					/>
+					<SummaryItem label="Required airflow" value={`${results.cfm} CFM`} />
 					<SummaryItem
-						label="Required airflow"
-						value={`${results.equipmentSizing.airflow.cfm} CFM`}
-					/>
-					<SummaryItem
-						label="Sensible Heat Ratio"
-						value={`${results.summary.efficiencyMetrics.sensibleHeatRatio}`}
-					/>
-					<SummaryItem
-						label="Latent fraction"
-						value={`${results.summary.efficiencyMetrics.latentFraction}`}
+						label="Total conduction"
+						value={`${totalConduction.toLocaleString()} BTU/h`}
 					/>
 				</CardContent>
 			</Card>
 
 			<Card>
 				<CardHeader>
-					<CardTitle>Cooling load breakdown</CardTitle>
+					<CardTitle>Load breakdown</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<Table>
@@ -174,23 +175,54 @@ export function ResultsDisplay({
 					<CardTitle>Input snapshot</CardTitle>
 				</CardHeader>
 				<CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-					<SummaryItem label="Climate zone" value={inputs.climateZone} />
+					<SummaryItem label="Floor area" value={`${inputs.area} sq ft`} />
 					<SummaryItem
-						label="Design ΔT"
-						value={`${inputs.designTemperatureDifference.toFixed(1)} °F`}
+						label="Wall area"
+						value={`${inputs.envelope.wallArea} sq ft`}
+					/>
+					<SummaryItem label="Wall R-value" value={`R-${inputs.envelope.wallR}`} />
+					<SummaryItem
+						label="Roof area"
+						value={`${inputs.envelope.roofArea} sq ft`}
+					/>
+					<SummaryItem label="Roof R-value" value={`R-${inputs.envelope.roofR}`} />
+					<SummaryItem
+						label="Window area"
+						value={`${inputs.envelope.windowArea} sq ft`}
 					/>
 					<SummaryItem
-						label="Building volume"
-						value={`${inputs.buildingVolume.toLocaleString()} ft³`}
+						label="Window U-factor"
+						value={`${inputs.envelope.windowU}`}
+					/>
+					<SummaryItem
+						label="Window SHGC"
+						value={`${inputs.envelope.windowSHGC}`}
 					/>
 					<SummaryItem
 						label="Infiltration class"
-						value={inputs.infiltrationClass}
+						value={inputs.infiltration.class}
 					/>
-					<SummaryItem label="Duct location" value={inputs.ductwork.location} />
+					<SummaryItem label="Occupants" value={`${inputs.internal.occupants}`} />
 					<SummaryItem
-						label="Duct insulation"
-						value={inputs.ductwork.insulation}
+						label="Lighting"
+						value={`${inputs.internal.lighting} W`}
+					/>
+					<SummaryItem
+						label="Appliances"
+						value={`${inputs.internal.appliances} W`}
+					/>
+					<SummaryItem label="Duct location" value={inputs.ducts.location} />
+					<SummaryItem
+						label="Duct efficiency"
+						value={`${(inputs.ducts.efficiency * 100).toFixed(0)}%`}
+					/>
+					<SummaryItem
+						label="Indoor temp"
+						value={`${inputs.climate.indoorTemp} °F`}
+					/>
+					<SummaryItem
+						label="Summer design temp"
+						value={`${inputs.climate.summerDesignTemp} °F`}
 					/>
 				</CardContent>
 			</Card>

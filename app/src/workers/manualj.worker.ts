@@ -1,18 +1,19 @@
-import type { BuildingInputs, CalculationResults } from "@manualj/calc-engine";
-import { calculateManualJ } from "@manualj/calc-engine";
+import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
+import { calculateSimplifiedManualJ } from "@manualj/calc-engine";
 
 export interface WorkerMessage {
 	id: string;
 	type: "CALCULATE" | "CANCEL";
-	inputs?: BuildingInputs;
+	inputs?: ManualJInputs;
 }
 
 export interface WorkerResponse {
 	id: string;
 	type: "RESULT" | "ERROR" | "PROGRESS";
-	results?: CalculationResults;
+	results?: ManualJResults;
 	error?: string;
 	progress?: number;
+	duration?: number;
 }
 
 let currentId: string | null = null;
@@ -44,7 +45,10 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 			queueMicrotask(() => {
 				if (cancelled) return;
 				try {
-					const results = calculateManualJ(inputs);
+					const startTime = performance.now();
+					const results = calculateSimplifiedManualJ(inputs);
+					const duration = performance.now() - startTime;
+					
 					self.postMessage({
 						id,
 						type: "PROGRESS",
@@ -55,6 +59,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 							id,
 							type: "RESULT",
 							results,
+							duration,
 						} satisfies WorkerResponse);
 					}
 				} catch (error) {

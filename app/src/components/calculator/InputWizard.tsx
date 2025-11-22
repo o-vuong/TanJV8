@@ -1,4 +1,4 @@
-import type { BuildingInputs, CalculationResults } from "@manualj/calc-engine";
+import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import type { InputHTMLAttributes } from "react";
@@ -25,30 +25,31 @@ import {
 } from "../ui/select";
 
 const schema = z.object({
-	floorArea: z.coerce.number().positive("Floor area must be positive"),
+	area: z.coerce.number().positive("Area must be positive"),
 	ceilingHeight: z.coerce.number().positive("Ceiling height must be positive"),
-	wallAreaNorth: z.coerce.number().nonnegative(),
-	wallAreaSouth: z.coerce.number().nonnegative(),
-	wallAreaEast: z.coerce.number().nonnegative(),
-	wallAreaWest: z.coerce.number().nonnegative(),
-	wallRValue: z.coerce.number().positive(),
-	roofArea: z.coerce.number().positive(),
-	roofRValue: z.coerce.number().positive(),
-	windowAreaSouth: z.coerce.number().nonnegative(),
-	windowAreaNorth: z.coerce.number().nonnegative(),
-	windowRValue: z.coerce.number().positive(),
-	windowShgc: z.coerce.number().min(0).max(1),
-	doorArea: z.coerce.number().nonnegative(),
-	doorRValue: z.coerce.number().positive(),
-	stackEffect: z.coerce.number(),
-	windSpeed: z.coerce.number().nonnegative(),
+	wallArea: z.coerce.number().nonnegative("Wall area must be non-negative"),
+	wallR: z.coerce.number().positive("Wall R-value must be positive"),
+	roofArea: z.coerce.number().positive("Roof area must be positive"),
+	roofR: z.coerce.number().positive("Roof R-value must be positive"),
+	windowArea: z.coerce.number().nonnegative("Window area must be non-negative"),
+	windowU: z.coerce
+		.number()
+		.positive("Window U-value must be positive")
+		.max(2, "Window U-value seems too high"),
+	windowSHGC: z.coerce
+		.number()
+		.min(0, "SHGC must be between 0 and 1")
+		.max(1, "SHGC must be between 0 and 1"),
 	infiltrationClass: z.enum(["tight", "average", "loose"]),
-	occupants: z.coerce.number().int().nonnegative(),
-	lightingWatts: z.coerce.number().nonnegative(),
-	refrigeratorWatts: z.coerce.number().nonnegative(),
-	dishwasherWatts: z.coerce.number().nonnegative(),
-	ductLocation: z.enum(["conditioned", "unconditioned", "exterior"]),
-	ductInsulation: z.enum(["none", "minimal", "standard", "high"]),
+	occupants: z.coerce.number().int().nonnegative("Occupants must be non-negative"),
+	lighting: z.coerce.number().nonnegative("Lighting watts must be non-negative"),
+	appliances: z.coerce.number().nonnegative("Appliance watts must be non-negative"),
+	ductLocation: z.enum(["conditioned", "unconditioned"]),
+	ductEfficiency: z.coerce
+		.number()
+		.min(0, "Efficiency must be between 0 and 1")
+		.max(1, "Efficiency must be between 0 and 1"),
+	indoorTemp: z.coerce.number().positive("Indoor temperature must be positive"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -57,28 +58,9 @@ const fieldValidators = schema.shape as Record<keyof FormValues, z.ZodTypeAny>;
 
 interface InputWizardProps {
 	climateData: ClimateData;
-	onComplete: (inputs: BuildingInputs, results: CalculationResults) => void;
+	onComplete: (inputs: ManualJInputs, results: ManualJResults) => void;
 	onBack: () => void;
 }
-
-const OCCUPANT_SENSIBLE = 230;
-const OCCUPANT_LATENT = 190;
-
-const SOLAR_FACTORS = {
-	orientationFactors: {
-		north: 0.6,
-		south: 1.1,
-		east: 0.9,
-		west: 1.0,
-		northeast: 0.7,
-		southeast: 1.0,
-		southwest: 1.05,
-		northwest: 0.65,
-	},
-	coolingLoadFactors: {
-		15: 1.1,
-	},
-};
 
 export function InputWizard({
 	climateData,
@@ -91,30 +73,22 @@ export function InputWizard({
 
 	const form = useForm<FormValues>({
 		defaultValues: {
-			floorArea: 2400,
+			area: 2400,
 			ceilingHeight: 8,
-			wallAreaNorth: 200,
-			wallAreaSouth: 200,
-			wallAreaEast: 150,
-			wallAreaWest: 150,
-			wallRValue: 13,
+			wallArea: 700,
+			wallR: 13,
 			roofArea: 2400,
-			roofRValue: 38,
-			windowAreaSouth: 80,
-			windowAreaNorth: 60,
-			windowRValue: 3,
-			windowShgc: 0.35,
-			doorArea: 40,
-			doorRValue: 5,
-			stackEffect: 12,
-			windSpeed: 7,
+			roofR: 38,
+			windowArea: 140,
+			windowU: 0.35,
+			windowSHGC: 0.35,
 			infiltrationClass: "average",
 			occupants: 4,
-			lightingWatts: 2000,
-			refrigeratorWatts: 400,
-			dishwasherWatts: 1200,
+			lighting: 2000,
+			appliances: 1600,
 			ductLocation: "unconditioned",
-			ductInsulation: "standard",
+			ductEfficiency: 0.85,
+			indoorTemp: 75,
 		},
 		validatorAdapter: zodValidator,
 		onSubmit: async ({ value }) => {
@@ -123,110 +97,37 @@ export function InputWizard({
 			setError(null);
 
 			try {
-				const indoorCooling = 75;
-				const designDelta =
-					climateData.variables.summerDesignTemp - indoorCooling;
-				const volume = value.floorArea * value.ceilingHeight;
+				const volume = value.area * value.ceilingHeight;
 
-				const inputs: BuildingInputs = {
-					climateZone: climateData.climateRefId ?? "unknown",
-					designTemperatureDifference: designDelta,
-					buildingVolume: volume,
-					infiltrationClass: value.infiltrationClass,
-					windSpeed: value.windSpeed,
-					stackEffect: value.stackEffect,
-					solarFactors: SOLAR_FACTORS,
-					walls: [
-						{
-							id: "north",
-							area: value.wallAreaNorth,
-							rValue: value.wallRValue,
-							orientation: "north",
-						},
-						{
-							id: "south",
-							area: value.wallAreaSouth,
-							rValue: value.wallRValue,
-							orientation: "south",
-						},
-						{
-							id: "east",
-							area: value.wallAreaEast,
-							rValue: value.wallRValue,
-							orientation: "east",
-						},
-						{
-							id: "west",
-							area: value.wallAreaWest,
-							rValue: value.wallRValue,
-							orientation: "west",
-						},
-					],
-					windows: [
-						{
-							id: "south-windows",
-							area: value.windowAreaSouth,
-							rValue: value.windowRValue,
-							shgc: value.windowShgc,
-							orientation: "south",
-						},
-						{
-							id: "north-windows",
-							area: value.windowAreaNorth,
-							rValue: value.windowRValue,
-							shgc: value.windowShgc,
-							orientation: "north",
-						},
-					],
-					doors: [
-						{
-							id: "main-door",
-							area: value.doorArea,
-							rValue: value.doorRValue,
-							orientation: "south",
-						},
-					],
-					roof: {
-						id: "roof",
-						area: value.roofArea,
-						rValue: value.roofRValue,
+				const inputs: ManualJInputs = {
+					area: value.area,
+					climateRefId: climateData.climateRefId,
+					envelope: {
+						wallArea: value.wallArea,
+						wallR: value.wallR,
+						roofArea: value.roofArea,
+						roofR: value.roofR,
+						windowArea: value.windowArea,
+						windowU: value.windowU,
+						windowSHGC: value.windowSHGC,
 					},
-					foundation: {
-						id: "foundation",
-						area: value.floorArea,
-						rValue: 10,
+					infiltration: {
+						class: value.infiltrationClass,
+						volume,
 					},
-					occupancy: {
-						count: value.occupants,
-						sensibleGainPerPerson: OCCUPANT_SENSIBLE,
-						latentGainPerPerson: OCCUPANT_LATENT,
+					internal: {
+						occupants: value.occupants,
+						lighting: value.lighting,
+						appliances: value.appliances,
 					},
-					lighting: {
-						totalWattage: value.lightingWatts,
-					},
-					appliances: [
-						{
-							type: "refrigerator",
-							wattage: value.refrigeratorWatts,
-							usageFactor: 0.4,
-						},
-						{
-							type: "dishwasher",
-							wattage: value.dishwasherWatts,
-							usageFactor: 0.1,
-						},
-					],
-					ductwork: {
+					ducts: {
 						location: value.ductLocation,
-						insulation: value.ductInsulation,
+						efficiency: value.ductEfficiency,
 					},
-					diversityFactors: {
-						occupancy: 0.85,
-						lighting: 0.9,
-						appliances: {
-							refrigerator: 1,
-							dishwasher: 0.7,
-						},
+					climate: {
+						summerDesignTemp: climateData.variables.summerDesignTemp,
+						winterDesignTemp: climateData.variables.winterDesignTemp,
+						indoorTemp: value.indoorTemp,
 					},
 				};
 
@@ -275,7 +176,7 @@ export function InputWizard({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Step 2: Describe the building</CardTitle>
+				<CardTitle>Step 2: Building inputs</CardTitle>
 			</CardHeader>
 			<form
 				onSubmit={(event) => {
@@ -285,7 +186,7 @@ export function InputWizard({
 			>
 				<CardContent className="space-y-6">
 					<section className="grid gap-4 sm:grid-cols-2">
-						{renderNumberField("floorArea", "Floor area (sq ft)", { min: 1 })}
+						{renderNumberField("area", "Floor area (sq ft)", { min: 1 })}
 						{renderNumberField("ceilingHeight", "Ceiling height (ft)", {
 							min: 1,
 						})}
@@ -293,168 +194,135 @@ export function InputWizard({
 
 					<section className="space-y-3">
 						<h3 className="text-sm font-semibold text-muted-foreground">
-							Wall assemblies
+							Envelope
 						</h3>
-						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-							{renderNumberField("wallAreaNorth", "North walls (sq ft)", {
+						<div className="grid gap-4 sm:grid-cols-2">
+							{renderNumberField("wallArea", "Total wall area (sq ft)", {
 								min: 0,
 							})}
-							{renderNumberField("wallAreaSouth", "South walls (sq ft)", {
-								min: 0,
-							})}
-							{renderNumberField("wallAreaEast", "East walls (sq ft)", {
-								min: 0,
-							})}
-							{renderNumberField("wallAreaWest", "West walls (sq ft)", {
-								min: 0,
-							})}
-							{renderNumberField("wallRValue", "Wall R-value", {
+							{renderNumberField("wallR", "Wall R-value", {
 								min: 1,
 								step: 0.1,
+							})}
+							{renderNumberField("roofArea", "Roof area (sq ft)", { min: 0 })}
+							{renderNumberField("roofR", "Roof R-value", {
+								min: 1,
+								step: 0.1,
+							})}
+							{renderNumberField("windowArea", "Total window area (sq ft)", {
+								min: 0,
+							})}
+							{renderNumberField("windowU", "Window U-factor", {
+								step: 0.01,
+								min: 0.01,
+								max: 2,
+							})}
+							{renderNumberField("windowSHGC", "Window SHGC", {
+								step: 0.05,
+								min: 0,
+								max: 1,
+							})}
+						</div>
+					</section>
+
+					<section className="space-y-3">
+						<h3 className="text-sm font-semibold text-muted-foreground">
+							Infiltration
+						</h3>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<form.Field
+								name="infiltrationClass"
+								validators={{ onChange: fieldValidators.infiltrationClass }}
+							>
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor="infiltrationClass">Infiltration class</Label>
+										<Select
+											value={field.state.value}
+											onValueChange={(value) =>
+												field.handleChange(
+													value as FormValues["infiltrationClass"],
+												)
+											}
+										>
+											<SelectTrigger id="infiltrationClass">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="tight">Tight</SelectItem>
+												<SelectItem value="average">Average</SelectItem>
+												<SelectItem value="loose">Loose</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								)}
+							</form.Field>
+						</div>
+					</section>
+
+					<section className="space-y-3">
+						<h3 className="text-sm font-semibold text-muted-foreground">
+							Internal gains
+						</h3>
+						<div className="grid gap-4 sm:grid-cols-3">
+							{renderNumberField("occupants", "Occupants", { min: 0, step: 1 })}
+							{renderNumberField("lighting", "Lighting (watts)", {
+								min: 0,
+								step: 10,
+							})}
+							{renderNumberField("appliances", "Appliances (watts)", {
+								min: 0,
+								step: 10,
+							})}
+						</div>
+					</section>
+
+					<section className="space-y-3">
+						<h3 className="text-sm font-semibold text-muted-foreground">
+							Ducts
+						</h3>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<form.Field
+								name="ductLocation"
+								validators={{ onChange: fieldValidators.ductLocation }}
+							>
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor="ductLocation">Duct location</Label>
+										<Select
+											value={field.state.value}
+											onValueChange={(value) =>
+												field.handleChange(value as FormValues["ductLocation"])
+											}
+										>
+											<SelectTrigger id="ductLocation">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="conditioned">
+													Conditioned space
+												</SelectItem>
+												<SelectItem value="unconditioned">
+													Unconditioned space
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								)}
+							</form.Field>
+							{renderNumberField("ductEfficiency", "Duct efficiency (0-1)", {
+								step: 0.05,
+								min: 0,
+								max: 1,
 							})}
 						</div>
 					</section>
 
 					<section className="grid gap-4 sm:grid-cols-2">
-						{renderNumberField("roofArea", "Roof area (sq ft)", { min: 0 })}
-						{renderNumberField("roofRValue", "Roof R-value", {
-							min: 1,
-							step: 0.1,
+						{renderNumberField("indoorTemp", "Indoor temperature (°F)", {
+							min: 60,
+							max: 80,
 						})}
-					</section>
-
-					<section className="grid gap-4 lg:grid-cols-3">
-						{renderNumberField("windowAreaSouth", "South window area (sq ft)", {
-							min: 0,
-						})}
-						{renderNumberField("windowAreaNorth", "North window area (sq ft)", {
-							min: 0,
-						})}
-						{renderNumberField("windowShgc", "Window SHGC", {
-							step: 0.05,
-							min: 0,
-							max: 1,
-						})}
-						{renderNumberField("windowRValue", "Window R-value", {
-							min: 1,
-							step: 0.1,
-						})}
-						{renderNumberField("doorArea", "Door area (sq ft)", { min: 0 })}
-						{renderNumberField("doorRValue", "Door R-value", {
-							min: 1,
-							step: 0.1,
-						})}
-					</section>
-
-					<section className="grid gap-4 sm:grid-cols-3">
-						{renderNumberField("occupants", "Occupants", { min: 0, step: 1 })}
-						{renderNumberField("lightingWatts", "Lighting (watts)", {
-							min: 0,
-							step: 10,
-						})}
-						{renderNumberField("refrigeratorWatts", "Refrigerator (watts)", {
-							min: 0,
-							step: 10,
-						})}
-						{renderNumberField("dishwasherWatts", "Dishwasher (watts)", {
-							min: 0,
-							step: 10,
-						})}
-					</section>
-
-					<section className="grid gap-4 sm:grid-cols-2">
-						<form.Field
-							name="infiltrationClass"
-							validators={{ onChange: fieldValidators.infiltrationClass }}
-						>
-							{(field) => (
-								<div className="space-y-2">
-									<Label htmlFor="infiltrationClass">Infiltration class</Label>
-									<Select
-										value={field.state.value}
-										onValueChange={(value) =>
-											field.handleChange(
-												value as FormValues["infiltrationClass"],
-											)
-										}
-									>
-										<SelectTrigger id="infiltrationClass">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="tight">Tight</SelectItem>
-											<SelectItem value="average">Average</SelectItem>
-											<SelectItem value="loose">Loose</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							)}
-						</form.Field>
-						{renderNumberField("windSpeed", "Wind speed (mph)", {
-							min: 0,
-							step: 0.5,
-						})}
-						{renderNumberField("stackEffect", "Stack effect (°F)", {
-							step: 0.5,
-						})}
-					</section>
-
-					<section className="grid gap-4 sm:grid-cols-2">
-						<form.Field
-							name="ductLocation"
-							validators={{ onChange: fieldValidators.ductLocation }}
-						>
-							{(field) => (
-								<div className="space-y-2">
-									<Label htmlFor="ductLocation">Duct location</Label>
-									<Select
-										value={field.state.value}
-										onValueChange={(value) =>
-											field.handleChange(value as FormValues["ductLocation"])
-										}
-									>
-										<SelectTrigger id="ductLocation">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="conditioned">
-												Conditioned space
-											</SelectItem>
-											<SelectItem value="unconditioned">
-												Unconditioned space
-											</SelectItem>
-											<SelectItem value="exterior">Exterior</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							)}
-						</form.Field>
-						<form.Field
-							name="ductInsulation"
-							validators={{ onChange: fieldValidators.ductInsulation }}
-						>
-							{(field) => (
-								<div className="space-y-2">
-									<Label htmlFor="ductInsulation">Duct insulation</Label>
-									<Select
-										value={field.state.value}
-										onValueChange={(value) =>
-											field.handleChange(value as FormValues["ductInsulation"])
-										}
-									>
-										<SelectTrigger id="ductInsulation">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="none">None</SelectItem>
-											<SelectItem value="minimal">Minimal (R-4)</SelectItem>
-											<SelectItem value="standard">Standard (R-6)</SelectItem>
-											<SelectItem value="high">High (R-8+)</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							)}
-						</form.Field>
 					</section>
 
 					{error && <p className="text-sm text-destructive">{error}</p>}

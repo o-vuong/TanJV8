@@ -5,6 +5,15 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f postgres",
-    "docker:destroy": "docker compose down -v"
+    "docker:destroy": "docker compose down -v",
+    "dev": "pnpm --filter app dev",
+    "build": "pnpm --recursive build",
+    "test": "pnpm --recursive test",
+    "test:coverage": "pnpm --filter app test:coverage",
+    "test:e2e": "pnpm --filter app test:e2e",
+    "test:a11y": "pnpm --filter app test:a11y",
+    "lint": "pnpm --recursive lint",
+    "type-check": "pnpm --recursive type-check",
+    "lighthouse": "pnpm --filter app lighthouse"
   }
 }

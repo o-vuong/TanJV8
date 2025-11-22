@@ -7,9 +7,14 @@
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc --project tsconfig.json --noEmit",
-    "test": "vitest"
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^3.23.8"
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
   }
 }

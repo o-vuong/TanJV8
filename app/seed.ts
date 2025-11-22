@@ -14,7 +14,6 @@ async function main() {
   await prisma.user.deleteMany()
   await prisma.climateRef.deleteMany()
   await prisma.materialConstant.deleteMany()
-  await prisma.todo.deleteMany()
 
   const user = await prisma.user.create({
     data: {
@@ -117,6 +116,36 @@ async function main() {
           longitude: -73.9972,
         },
       },
+      {
+        zipCode: '30301',
+        revision: 2025,
+        variables: {
+          summerDesignTemp: 95,
+          winterDesignTemp: 20,
+          latitude: 33.7488,
+          longitude: -84.388,
+        },
+      },
+      {
+        zipCode: '90210',
+        revision: 2025,
+        variables: {
+          summerDesignTemp: 85,
+          winterDesignTemp: 42,
+          latitude: 34.1016,
+          longitude: -118.4143,
+        },
+      },
+      {
+        zipCode: '60601',
+        revision: 2025,
+        variables: {
+          summerDesignTemp: 91,
+          winterDesignTemp: -5,
+          latitude: 41.8843,
+          longitude: -87.6324,
+        },
+      },
     ],
   })
 
@@ -128,15 +157,12 @@ async function main() {
     ],
   })
 
-  await prisma.todo.createMany({
-    data: [
-      { title: 'Review seeded Manual J project' },
-      { title: 'Invite teammates to the group' },
-      { title: 'Run a new calculation' },
-    ],
-  })
-
   console.log('✅ Seed complete')
+  console.log(`   User: ${user.email}`)
+  console.log(`   Group: ${group.name}`)
+  console.log(`   Project: ${project.name}`)
+  console.log(`   Climate zones: 5`)
+  console.log(`   Material constants: 3`)
 }
 
 main()
