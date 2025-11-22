@@ -1,3 +1,59 @@
+// Simplified Manual J Input Types
+export interface ManualJInputs {
+  area: number
+  climateRefId: string
+  envelope: {
+    wallArea: number
+    wallR: number
+    roofArea: number
+    roofR: number
+    windowArea: number
+    windowU: number
+    windowSHGC: number
+  }
+  infiltration: {
+    class: 'tight' | 'average' | 'loose'
+    volume: number
+  }
+  internal: {
+    occupants: number
+    lighting: number // watts
+    appliances: number // watts
+  }
+  ducts: {
+    location: 'conditioned' | 'unconditioned'
+    efficiency: number // 0-1
+  }
+  climate: {
+    summerDesignTemp: number
+    winterDesignTemp: number
+    indoorTemp: number
+  }
+}
+
+// Simplified Manual J Results Types
+export interface LoadBreakdown {
+  conduction: {
+    walls: number
+    roof: number
+    windows: number
+  }
+  solar: number
+  infiltration: number
+  internalGains: number
+  ductLosses: number
+}
+
+export interface ManualJResults {
+  sensible: number
+  latent: number
+  total: number
+  tonnage: number // rounded to nearest 0.5
+  cfm: number // rounded to nearest 50
+  breakdown: LoadBreakdown
+}
+
+// Legacy types kept for backward compatibility during migration
 export type Orientation = 'north' | 'south' | 'east' | 'west' | 'northeast' | 'southeast' | 'southwest' | 'northwest'
 
 export interface WallAssembly {
@@ -91,19 +147,17 @@ export interface BuildingInputs {
   diversityFactors: DiversityFactors
 }
 
-export interface LoadBreakdown {
-  conduction: number
-  solar: number
-  infiltration: number
-  internalGains: number
-  ductLosses: number
-}
-
 export interface LoadResults {
   sensible: number
   latent: number
   total: number
-  breakdown: LoadBreakdown
+  breakdown: {
+    conduction: number
+    solar: number
+    infiltration: number
+    internalGains: number
+    ductLosses: number
+  }
 }
 
 export interface VentilationResults {
