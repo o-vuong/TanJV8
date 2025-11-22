@@ -1,16 +1,7 @@
 import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
-import {
-	Home,
-	Square,
-	Wind,
-	Users,
-	Lightbulb,
-	Gauge,
-	Thermometer,
-} from "lucide-react";
-import type { InputHTMLAttributes } from "react";
+import { Home } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import type { ClimateData } from "../../lib/queries/location";
@@ -23,15 +14,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../ui/card";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../ui/select";
+	BuildingDimensionsSection,
+	BuildingEnvelopeSection,
+	InfiltrationSection,
+	InternalGainsSection,
+	DuctSystemSection,
+	ClimatePreferencesSection,
+} from "./FormSections";
 
 const schema = z.object({
 	area: z.coerce.number().positive("Area must be positive"),
@@ -155,32 +145,6 @@ export function InputWizard({
 		},
 	});
 
-	const renderNumberField = (
-		name: keyof FormValues,
-		label: string,
-		props?: InputHTMLAttributes<HTMLInputElement>,
-	) => (
-		<form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
-			{(field) => (
-				<div className="space-y-2">
-					<Label htmlFor={String(name)}>{label}</Label>
-					<Input
-						id={String(name)}
-						type="number"
-						value={field.state.value}
-						onChange={(event) => field.handleChange(Number(event.target.value))}
-						onBlur={field.handleBlur}
-						{...props}
-					/>
-					{field.state.meta.errors?.[0] && (
-						<p className="text-sm text-destructive">
-							{field.state.meta.errors[0]}
-						</p>
-					)}
-				</div>
-			)}
-		</form.Field>
-	);
 
 	return (
 		<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
@@ -201,161 +165,12 @@ export function InputWizard({
 				autoComplete="off"
 			>
 				<CardContent className="space-y-8 p-6">
-					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
-						<div className="flex items-center gap-2 text-white font-semibold">
-							<Home className="w-5 h-5 text-blue-400" />
-							<h3>Building dimensions</h3>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							{renderNumberField("area", "Floor area (sq ft)", { min: 1 })}
-							{renderNumberField("ceilingHeight", "Ceiling height (ft)", {
-								min: 1,
-							})}
-						</div>
-					</section>
-
-					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
-						<div className="flex items-center gap-2 text-white font-semibold">
-							<Square className="w-5 h-5 text-blue-400" />
-							<h3>Building envelope</h3>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							{renderNumberField("wallArea", "Total wall area (sq ft)", {
-								min: 0,
-							})}
-							{renderNumberField("wallR", "Wall R-value", {
-								min: 1,
-								step: 0.1,
-							})}
-							{renderNumberField("roofArea", "Roof area (sq ft)", { min: 0 })}
-							{renderNumberField("roofR", "Roof R-value", {
-								min: 1,
-								step: 0.1,
-							})}
-							{renderNumberField("windowArea", "Total window area (sq ft)", {
-								min: 0,
-							})}
-							{renderNumberField("windowU", "Window U-factor", {
-								step: 0.01,
-								min: 0.01,
-								max: 2,
-							})}
-							{renderNumberField("windowSHGC", "Window SHGC", {
-								step: 0.05,
-								min: 0,
-								max: 1,
-							})}
-						</div>
-					</section>
-
-					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
-						<div className="flex items-center gap-2 text-white font-semibold">
-							<Wind className="w-5 h-5 text-blue-400" />
-							<h3>Infiltration</h3>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<form.Field
-								name="infiltrationClass"
-								validators={{ onChange: fieldValidators.infiltrationClass }}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor="infiltrationClass">Infiltration class</Label>
-										<Select
-											value={field.state.value}
-											onValueChange={(value) =>
-												field.handleChange(
-													value as FormValues["infiltrationClass"],
-												)
-											}
-										>
-											<SelectTrigger id="infiltrationClass">
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="tight">Tight</SelectItem>
-												<SelectItem value="average">Average</SelectItem>
-												<SelectItem value="loose">Loose</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								)}
-							</form.Field>
-						</div>
-					</section>
-
-					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
-						<div className="flex items-center gap-2 text-white font-semibold">
-							<Users className="w-5 h-5 text-blue-400" />
-							<h3>Internal gains</h3>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-3">
-							{renderNumberField("occupants", "Occupants", { min: 0, step: 1 })}
-							{renderNumberField("lighting", "Lighting (watts)", {
-								min: 0,
-								step: 10,
-							})}
-							{renderNumberField("appliances", "Appliances (watts)", {
-								min: 0,
-								step: 10,
-							})}
-						</div>
-					</section>
-
-					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
-						<div className="flex items-center gap-2 text-white font-semibold">
-							<Gauge className="w-5 h-5 text-blue-400" />
-							<h3>Duct system</h3>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<form.Field
-								name="ductLocation"
-								validators={{ onChange: fieldValidators.ductLocation }}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor="ductLocation">Duct location</Label>
-										<Select
-											value={field.state.value}
-											onValueChange={(value) =>
-												field.handleChange(value as FormValues["ductLocation"])
-											}
-										>
-											<SelectTrigger id="ductLocation">
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="conditioned">
-													Conditioned space
-												</SelectItem>
-												<SelectItem value="unconditioned">
-													Unconditioned space
-												</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								)}
-							</form.Field>
-							{renderNumberField("ductEfficiency", "Duct efficiency (0-1)", {
-								step: 0.05,
-								min: 0,
-								max: 1,
-							})}
-						</div>
-					</section>
-
-					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
-						<div className="flex items-center gap-2 text-white font-semibold">
-							<Thermometer className="w-5 h-5 text-blue-400" />
-							<h3>Climate preferences</h3>
-						</div>
-						<div className="grid gap-4 sm:grid-cols-2">
-							{renderNumberField("indoorTemp", "Indoor temperature (°F)", {
-								min: 60,
-								max: 80,
-							})}
-						</div>
-					</section>
+					<BuildingDimensionsSection form={form} fieldValidators={fieldValidators} />
+					<BuildingEnvelopeSection form={form} fieldValidators={fieldValidators} />
+					<InfiltrationSection form={form} fieldValidators={fieldValidators} />
+					<InternalGainsSection form={form} fieldValidators={fieldValidators} />
+					<DuctSystemSection form={form} fieldValidators={fieldValidators} />
+					<ClimatePreferencesSection form={form} fieldValidators={fieldValidators} />
 
 					{error && (
 						<div className="p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 flex items-center gap-3">
