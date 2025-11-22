@@ -118,10 +118,10 @@ function App() {
 				</div>
 			</section>
 
-			<section className="py-16 px-6 max-w-6xl mx-auto">
-				<div className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 backdrop-blur-sm border border-blue-500/30 rounded-xl p-8 md:p-12 text-center">
-					<div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mb-6">
-						<Calculator className="w-8 h-8 text-white" />
+			<section    className = "py-16 px-6 max-w-6xl mx-auto">
+			<div        className = "bg-gradient-to-br from-blue-900/30 to-cyan-900/30 backdrop-blur-sm border border-blue-500/30 rounded-xl p-8 md:p-12 text-center">
+			<div        className = "inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mb-6">
+			<Calculator className = "w-8 h-8 text-white" />
 					</div>
 					<h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
 						Try It Now - Live Demo
@@ -151,16 +151,12 @@ function App() {
 						>
 							Launch Calculator
 						</Link>
-						<button
-							type="button"
+						<Link
+							to="/calculator"
 							className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-gray-300 font-semibold rounded-lg transition-colors border border-slate-700 hover:border-blue-500/50"
-							onClick={() => {
-								// Could add a demo modal or animation here
-								window.scrollTo({ top: 0, behavior: 'smooth' });
-							}}
 						>
 							View Example
-						</button>
+						</Link>
 					</div>
 					<p className="text-xs text-gray-500 mt-6">
 						* Sample calculation based on ZIP code 30301 (Atlanta, GA) with typical building parameters
