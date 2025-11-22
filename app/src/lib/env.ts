@@ -17,6 +17,7 @@ const envSchema = z.object({
 	GITHUB_CLIENT_ID: z.string().optional(),
 	GITHUB_CLIENT_SECRET: z.string().optional(),
 	OPENCAGE_API_KEY: z.string().optional(),
+	CLIMATE_SERVICE_URL: z.string().url().optional(),
 });
 
 const parsed = envSchema.safeParse({
@@ -34,6 +35,7 @@ const parsed = envSchema.safeParse({
 	GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
 	GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
 	OPENCAGE_API_KEY: process.env.OPENCAGE_API_KEY,
+	CLIMATE_SERVICE_URL: process.env.CLIMATE_SERVICE_URL,
 });
 
 if (!parsed.success) {

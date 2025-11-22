@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  climate-service:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENCAGE_API_KEY=${OPENCAGE_API_KEY:-}
+      - NOAA_API_KEY=${NOAA_API_KEY:-}
+    volumes:
+      - ./:/app
+    command: uvicorn example-fastapi:app --host 0.0.0.0 --port 8000 --reload
+

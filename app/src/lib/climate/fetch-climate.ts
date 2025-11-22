@@ -1,5 +1,14 @@
 import { env } from "../env";
 
+interface ClimateServiceResponse {
+	zipCode: string;
+	summerDesignTemp: number;
+	winterDesignTemp: number;
+	latitude: number;
+	longitude: number;
+	source?: string;
+}
+
 interface GeocodeResult {
 	latitude: number;
 	longitude: number;
@@ -130,12 +139,60 @@ async function geocodeZipCode(zipCode: string): Promise<GeocodeResult> {
 }
 
 /**
+ * Fetch climate data from Python microservice (if available)
+ */
+async function fetchFromPythonService(
+	zipCode: string,
+): Promise<ClimateEstimate | null> {
+	const serviceUrl = env.CLIMATE_SERVICE_URL;
+	
+	if (!serviceUrl) {
+		return null;
+	}
+	
+	try {
+		const url = `${serviceUrl}/climate/${zipCode}`;
+		const response = await fetch(url, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			signal: AbortSignal.timeout(10000), // 10 second timeout
+		});
+		
+		if (!response.ok) {
+			console.warn(`Climate service returned ${response.status}`);
+			return null;
+		}
+		
+		const data: ClimateServiceResponse = await response.json();
+		
+		return {
+			summerDesignTemp: data.summerDesignTemp,
+			winterDesignTemp: data.winterDesignTemp,
+			latitude: data.latitude,
+			longitude: data.longitude,
+		};
+	} catch (error) {
+		console.error("Error calling Python climate service:", error);
+		return null;
+	}
+}
+
+/**
  * Fetch climate data for a ZIP code from external sources
+ * Tries Python microservice first, then falls back to direct geocoding
  */
 export async function fetchClimateDataForZip(
 	zipCode: string,
 ): Promise<ClimateEstimate> {
-	// First, try to geocode the ZIP code
+	// Try Python microservice first (if configured)
+	const pythonData = await fetchFromPythonService(zipCode);
+	if (pythonData) {
+		return pythonData;
+	}
+	
+	// Fallback to direct geocoding and estimation
 	const { latitude, longitude } = await geocodeZipCode(zipCode);
 	
 	// Estimate design temperatures based on location
