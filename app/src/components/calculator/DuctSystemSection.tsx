@@ -13,9 +13,14 @@ import {
 export function DuctSystemSection({ form, fieldValidators }: FormSectionProps) {
 	return (
 		<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
-			<div className="flex items-center gap-2 text-white font-semibold">
-				<Gauge className="w-5 h-5 text-blue-400" />
-				<h3>Duct system</h3>
+			<div className="space-y-1">
+				<div className="flex items-center gap-2 text-white font-semibold">
+					<Gauge className="w-5 h-5 text-blue-400" />
+					<h3>Duct system</h3>
+				</div>
+				<p className="text-sm text-gray-400 ml-7">
+					Configure HVAC ductwork location and efficiency for distribution losses
+				</p>
 			</div>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<form.Field
