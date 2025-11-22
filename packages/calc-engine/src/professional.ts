@@ -1,6 +1,6 @@
 // ============================================================================
 // MANUAL J HVAC LOAD CALCULATION ENGINE - PROFESSIONAL EDITION
-// ASHRAE Compliant with CLTD Method, Psychrometrics, and Solar Calculations
+// ACCA Manual J 8th Edition Compliant with CLTD Method, Psychrometrics, and Solar Calculations
 // ============================================================================
 
 // PSYCHROMETRIC CONSTANTS
@@ -27,8 +27,8 @@ export interface SolarData {
   surfaceOrientation: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | "H";
 }
 
-// ASHRAE clear-sky solar radiation (Btu/h·ft²)
-const ASHRAE_SOLAR_RADIATION: Record<string, number[]> = {
+// ACCA Manual J solar radiation data (Btu/h·ft²) - based on ASHRAE clear-sky tables
+const ACCA_SOLAR_RADIATION: Record<string, number[]> = {
   N: [22, 28, 40, 55, 75, 88, 85, 73, 55, 42, 28, 20],
   NE: [52, 62, 80, 95, 105, 113, 112, 103, 88, 76, 60, 48],
   E: [87, 99, 120, 125, 125, 128, 130, 125, 118, 110, 95, 80],
@@ -191,7 +191,7 @@ export const ROOF_CONSTRUCTIONS: Record<string, ConstructionAssembly> = {
 export interface InfiltrationMethod {
   acH: number; // Air changes per hour at 50 Pa
   cfmPerPerson: number;
-  ventilationMinimum: number; // ASHRAE 62.2 minimum CFM
+  ventilationMinimum: number; // Minimum CFM per ASHRAE 62.2 (referenced by ACCA Manual J)
 }
 
 export const INFILTRATION_RATES = {
@@ -490,7 +490,7 @@ export class ManualJCalculator {
     orientation: string,
     month: number = 7
   ): number {
-    const radiationMap = ASHRAE_SOLAR_RADIATION as Record<string, number[]>;
+    const radiationMap = ACCA_SOLAR_RADIATION as Record<string, number[]>;
     return radiationMap[orientation]?.[month - 1] || 0;
   }
 

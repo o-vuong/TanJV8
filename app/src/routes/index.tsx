@@ -46,7 +46,7 @@ function App() {
 			icon: <Shield className="w-12 h-12 text-blue-400" />,
 			title: "Climate Data Integration",
 			description:
-				"ZIP code-based climate data lookup with ASHRAE design temperatures for your specific location.",
+				"ZIP code-based climate data lookup with ACCA Manual J design temperatures for your specific location.",
 		},
 	];
 
