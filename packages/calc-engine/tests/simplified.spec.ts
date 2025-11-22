@@ -164,7 +164,3 @@ describe('Simplified Manual J calculations', () => {
   })
 })
 
-<<<<<<< HEAD
-
-=======
->>>>>>> da6b6c7

@@ -205,7 +205,3 @@ test.describe('Calculator Accessibility', () => {
   })
 })
 
-<<<<<<< HEAD
-
-=======
->>>>>>> da6b6c7
