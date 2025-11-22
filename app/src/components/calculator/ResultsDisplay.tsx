@@ -5,6 +5,7 @@ import {
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
+import { Gauge, LineChart, FileText, Thermometer } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -103,11 +104,16 @@ export function ResultsDisplay({
 
 	return (
 		<div className="space-y-6">
-			<Card>
-				<CardHeader>
-					<CardTitle>Summary</CardTitle>
+			<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
+				<CardHeader className="border-b border-slate-700 bg-slate-900/50">
+					<CardTitle className="text-2xl flex items-center gap-3">
+						<div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+							<Gauge className="w-6 h-6 text-white" />
+						</div>
+						Summary
+					</CardTitle>
 				</CardHeader>
-				<CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 p-6">
 					<SummaryItem
 						label="Sensible load"
 						value={`${results.sensible.toLocaleString()} BTU/h`}
@@ -132,11 +138,16 @@ export function ResultsDisplay({
 				</CardContent>
 			</Card>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Load breakdown</CardTitle>
+			<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
+				<CardHeader className="border-b border-slate-700 bg-slate-900/50">
+					<CardTitle className="text-2xl flex items-center gap-3">
+						<div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+							<LineChart className="w-6 h-6 text-white" />
+						</div>
+						Load breakdown
+					</CardTitle>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="p-6">
 					<Table>
 						<TableHeader>
 							{table.getHeaderGroups().map((headerGroup) => (
@@ -170,11 +181,16 @@ export function ResultsDisplay({
 				</CardContent>
 			</Card>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Input snapshot</CardTitle>
+			<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
+				<CardHeader className="border-b border-slate-700 bg-slate-900/50">
+					<CardTitle className="text-2xl flex items-center gap-3">
+						<div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+							<FileText className="w-6 h-6 text-white" />
+						</div>
+						Input snapshot
+					</CardTitle>
 				</CardHeader>
-				<CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+				<CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 p-6">
 					<SummaryItem label="Floor area" value={`${inputs.area} sq ft`} />
 					<SummaryItem
 						label="Wall area"
@@ -227,11 +243,20 @@ export function ResultsDisplay({
 				</CardContent>
 			</Card>
 
-			<div className="flex justify-end gap-3">
-				<Button variant="outline" onClick={onBack}>
-					Back
+			<div className="flex justify-between gap-3">
+				<Button 
+					variant="outline" 
+					onClick={onBack}
+					className="px-6 border-slate-700 hover:bg-slate-800"
+				>
+					← Back
 				</Button>
-				<Button onClick={onStartNew}>Start new calculation</Button>
+				<Button 
+					onClick={onStartNew}
+					className="px-8 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+				>
+					Start new calculation
+				</Button>
 			</div>
 		</div>
 	);
@@ -239,11 +264,11 @@ export function ResultsDisplay({
 
 function SummaryItem({ label, value }: { label: string; value: string }) {
 	return (
-		<div className="space-y-1 rounded-lg border bg-muted/40 p-4">
-			<p className="text-xs uppercase tracking-wide text-muted-foreground">
+		<div className="space-y-2 rounded-lg border border-slate-700 bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-5 hover:border-blue-500/50 transition-all">
+			<p className="text-xs uppercase tracking-wide text-gray-500">
 				{label}
 			</p>
-			<p className="text-lg font-semibold">{value}</p>
+			<p className="text-2xl font-bold text-white">{value}</p>
 		</div>
 	);
 }

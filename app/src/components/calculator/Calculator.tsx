@@ -6,7 +6,11 @@ import { LocationResolver } from "./LocationResolver";
 import { ResultsDisplay } from "./ResultsDisplay";
 import { type Step, StepIndicator } from "./StepIndicator";
 
-export function Calculator() {
+interface CalculatorProps {
+	demoMode?: boolean;
+}
+
+export function Calculator({ demoMode = false }: CalculatorProps) {
 	const [step, setStep] = useState<Step>("location");
 	const [climateData, setClimateData] = useState<ClimateData | null>(null);
 	const [inputs, setInputs] = useState<ManualJInputs | null>(null);
@@ -38,7 +42,7 @@ export function Calculator() {
 			<StepIndicator currentStep={step} />
 
 			{step === "location" && (
-				<LocationResolver onComplete={handleLocationComplete} />
+				<LocationResolver onComplete={handleLocationComplete} demoMode={demoMode} />
 			)}
 
 			{step === "inputs" && climateData && (

@@ -118,6 +118,53 @@ function App() {
 				</div>
 			</section>
 
+			<section    className = "py-16 px-6 max-w-6xl mx-auto">
+			<div        className = "bg-gradient-to-br from-blue-900/30 to-cyan-900/30 backdrop-blur-sm border border-blue-500/30 rounded-xl p-8 md:p-12 text-center">
+			<div        className = "inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mb-6">
+			<Calculator className = "w-8 h-8 text-white" />
+					</div>
+					<h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+						Try It Now - Live Demo
+					</h2>
+					<p className="text-lg text-gray-300 mb-6 max-w-2xl mx-auto">
+						Experience the calculator with pre-filled sample data for a typical 
+						2,000 sq ft residential building in Atlanta, GA.
+					</p>
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-3xl mx-auto">
+						<div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+							<div className="text-3xl font-bold text-blue-400 mb-1">36,443</div>
+							<div className="text-sm text-gray-400">BTU/h Total Load</div>
+						</div>
+						<div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+							<div className="text-3xl font-bold text-cyan-400 mb-1">3.5</div>
+							<div className="text-sm text-gray-400">Tons Required</div>
+						</div>
+						<div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+							<div className="text-3xl font-bold text-blue-400 mb-1">1,400</div>
+							<div className="text-sm text-gray-400">CFM Airflow</div>
+						</div>
+					</div>
+					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+						<Link
+							to="/calculator"
+							className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-blue-500/50 hover:shadow-blue-500/70 hover:scale-105"
+						>
+							Launch Calculator
+						</Link>
+						<Link
+							to="/calculator"
+							search={{ demo: true }}
+							className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-gray-300 font-semibold rounded-lg transition-colors border border-slate-700 hover:border-blue-500/50"
+						>
+							View Example
+						</Link>
+					</div>
+					<p className="text-xs text-gray-500 mt-6">
+						* Sample calculation based on ZIP code 30301 (Atlanta, GA) with typical building parameters
+					</p>
+				</div>
+			</section>
+
 			<section className="py-16 px-6 max-w-4xl mx-auto">
 				<div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
 					<h2 className="text-2xl font-bold text-white mb-4">

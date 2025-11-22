@@ -1,6 +1,15 @@
 import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
+import {
+	Home,
+	Square,
+	Wind,
+	Users,
+	Lightbulb,
+	Gauge,
+	Thermometer,
+} from "lucide-react";
 import type { InputHTMLAttributes } from "react";
 import { useState } from "react";
 import { z } from "zod";
@@ -174,28 +183,42 @@ export function InputWizard({
 	);
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Step 2: Building inputs</CardTitle>
+		<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
+			<CardHeader className="border-b border-slate-700 bg-slate-900/50">
+				<CardTitle className="text-2xl flex items-center gap-3">
+					<div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+						<Home className="w-6 h-6 text-white" />
+					</div>
+					Step 2: Building inputs
+				</CardTitle>
 			</CardHeader>
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
+					event.stopPropagation();
 					form.handleSubmit();
 				}}
+				autoComplete="off"
 			>
-				<CardContent className="space-y-6">
-					<section className="grid gap-4 sm:grid-cols-2">
-						{renderNumberField("area", "Floor area (sq ft)", { min: 1 })}
-						{renderNumberField("ceilingHeight", "Ceiling height (ft)", {
-							min: 1,
-						})}
+				<CardContent className="space-y-8 p-6">
+					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
+						<div className="flex items-center gap-2 text-white font-semibold">
+							<Home className="w-5 h-5 text-blue-400" />
+							<h3>Building dimensions</h3>
+						</div>
+						<div className="grid gap-4 sm:grid-cols-2">
+							{renderNumberField("area", "Floor area (sq ft)", { min: 1 })}
+							{renderNumberField("ceilingHeight", "Ceiling height (ft)", {
+								min: 1,
+							})}
+						</div>
 					</section>
 
-					<section className="space-y-3">
-						<h3 className="text-sm font-semibold text-muted-foreground">
-							Envelope
-						</h3>
+					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
+						<div className="flex items-center gap-2 text-white font-semibold">
+							<Square className="w-5 h-5 text-blue-400" />
+							<h3>Building envelope</h3>
+						</div>
 						<div className="grid gap-4 sm:grid-cols-2">
 							{renderNumberField("wallArea", "Total wall area (sq ft)", {
 								min: 0,
@@ -225,10 +248,11 @@ export function InputWizard({
 						</div>
 					</section>
 
-					<section className="space-y-3">
-						<h3 className="text-sm font-semibold text-muted-foreground">
-							Infiltration
-						</h3>
+					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
+						<div className="flex items-center gap-2 text-white font-semibold">
+							<Wind className="w-5 h-5 text-blue-400" />
+							<h3>Infiltration</h3>
+						</div>
 						<div className="grid gap-4 sm:grid-cols-2">
 							<form.Field
 								name="infiltrationClass"
@@ -260,10 +284,11 @@ export function InputWizard({
 						</div>
 					</section>
 
-					<section className="space-y-3">
-						<h3 className="text-sm font-semibold text-muted-foreground">
-							Internal gains
-						</h3>
+					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
+						<div className="flex items-center gap-2 text-white font-semibold">
+							<Users className="w-5 h-5 text-blue-400" />
+							<h3>Internal gains</h3>
+						</div>
 						<div className="grid gap-4 sm:grid-cols-3">
 							{renderNumberField("occupants", "Occupants", { min: 0, step: 1 })}
 							{renderNumberField("lighting", "Lighting (watts)", {
@@ -277,10 +302,11 @@ export function InputWizard({
 						</div>
 					</section>
 
-					<section className="space-y-3">
-						<h3 className="text-sm font-semibold text-muted-foreground">
-							Ducts
-						</h3>
+					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
+						<div className="flex items-center gap-2 text-white font-semibold">
+							<Gauge className="w-5 h-5 text-blue-400" />
+							<h3>Duct system</h3>
+						</div>
 						<div className="grid gap-4 sm:grid-cols-2">
 							<form.Field
 								name="ductLocation"
@@ -318,31 +344,61 @@ export function InputWizard({
 						</div>
 					</section>
 
-					<section className="grid gap-4 sm:grid-cols-2">
-						{renderNumberField("indoorTemp", "Indoor temperature (°F)", {
-							min: 60,
-							max: 80,
-						})}
+					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
+						<div className="flex items-center gap-2 text-white font-semibold">
+							<Thermometer className="w-5 h-5 text-blue-400" />
+							<h3>Climate preferences</h3>
+						</div>
+						<div className="grid gap-4 sm:grid-cols-2">
+							{renderNumberField("indoorTemp", "Indoor temperature (°F)", {
+								min: 60,
+								max: 80,
+							})}
+						</div>
 					</section>
 
-					{error && <p className="text-sm text-destructive">{error}</p>}
+					{error && (
+						<div className="p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 flex items-center gap-3">
+							<div className="w-2 h-2 bg-red-500 rounded-full" />
+							<p className="text-sm font-medium">{error}</p>
+						</div>
+					)}
 					{typeof progress === "number" && (
-						<p className="text-sm text-muted-foreground">
-							Calculating… {progress}%
-						</p>
+						<div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/50 text-blue-400">
+							<div className="flex items-center gap-3 mb-2">
+								<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+								<p className="text-sm font-medium">Calculating… {progress}%</p>
+							</div>
+							<div className="w-full bg-slate-700 rounded-full h-2">
+								<div
+									className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
+									style={{ width: `${progress}%` }}
+								/>
+							</div>
+						</div>
 					)}
 				</CardContent>
-				<CardFooter className="flex items-center justify-between">
+				<CardFooter className="flex items-center justify-between border-t border-slate-700 bg-slate-900/50 p-6">
 					<Button
 						type="button"
 						variant="outline"
-						onClick={onBack}
+						onClick={(e) => {
+							e.preventDefault();
+							onBack();
+						}}
 						disabled={isCalculating}
+						className="px-6 border-slate-700 hover:bg-slate-800"
+						aria-label="Go back to location step"
 					>
-						Back
+						← Back
 					</Button>
-					<Button type="submit" disabled={isCalculating}>
-						{isCalculating ? "Calculating…" : "Generate results"}
+					<Button 
+						type="submit" 
+						disabled={isCalculating}
+						className="px-8 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+						aria-label={isCalculating ? "Calculating load" : "Generate calculation results"}
+					>
+						{isCalculating ? "Calculating…" : "Generate results →"}
 					</Button>
 				</CardFooter>
 			</form>
