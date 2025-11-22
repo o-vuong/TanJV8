@@ -195,8 +195,10 @@ export function InputWizard({
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
+					event.stopPropagation();
 					form.handleSubmit();
 				}}
+				autoComplete="off"
 			>
 				<CardContent className="space-y-8 p-6">
 					<section className="space-y-4 p-5 rounded-lg bg-slate-800/30 border border-slate-700/50">
@@ -380,9 +382,13 @@ export function InputWizard({
 					<Button
 						type="button"
 						variant="outline"
-						onClick={onBack}
+						onClick={(e) => {
+							e.preventDefault();
+							onBack();
+						}}
 						disabled={isCalculating}
-						className="px-6"
+						className="px-6 border-slate-700 hover:bg-slate-800"
+						aria-label="Go back to location step"
 					>
 						← Back
 					</Button>
@@ -390,6 +396,7 @@ export function InputWizard({
 						type="submit" 
 						disabled={isCalculating}
 						className="px-8 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+						aria-label={isCalculating ? "Calculating load" : "Generate calculation results"}
 					>
 						{isCalculating ? "Calculating…" : "Generate results →"}
 					</Button>
