@@ -1,159 +1,166 @@
 import type { UseFormReturn } from "@tanstack/react-form";
 import type { InputHTMLAttributes } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 
 export type FormValues = {
-	area: number;
-	ceilingHeight: number;
-	wallArea: number;
-	wallR: number;
-	roofArea: number;
-	roofR: number;
-	windowArea: number;
-	windowU: number;
-	windowSHGC: number;
-	infiltrationClass: "tight" | "average" | "loose";
-	occupants: number;
-	lighting: number;
-	appliances: number;
-	ductLocation: "conditioned" | "unconditioned";
-	ductEfficiency: number;
-	indoorTemp: number;
+  area: number;
+  ceilingHeight: number;
+  wallArea: number;
+  wallR: number;
+  roofArea: number;
+  roofR: number;
+  windowArea: number;
+  windowU: number;
+  windowSHGC: number;
+  infiltrationClass: "tight" | "average" | "loose";
+  occupants: number;
+  lighting: number;
+  appliances: number;
+  ductLocation: "conditioned" | "unconditioned";
+  ductEfficiency: number;
+  indoorTemp: number;
 };
 
 export type FieldValidators = Record<keyof FormValues, any>;
 
 // Helper to extract error message from Zod error or string
 export const getErrorMessage = (error: unknown): string => {
-	if (typeof error === 'string') return error;
-	if (error && typeof error === 'object' && 'message' in error) {
-		return String(error.message);
-	}
-	return 'Invalid value';
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object" && "message" in error) {
+    return String(error.message);
+  }
+  return "Invalid value";
 };
 
 export const renderNumberField = (
-	form: UseFormReturn<FormValues, any>,
-	fieldValidators: FieldValidators,
-	name: keyof FormValues,
-	label: string,
-	description?: string,
-	props?: InputHTMLAttributes<HTMLInputElement>,
+  form: UseFormReturn<FormValues, any>,
+  fieldValidators: FieldValidators,
+  name: keyof FormValues,
+  label: string,
+  description?: string,
+  props?: InputHTMLAttributes<HTMLInputElement>
 ) => {
-	return (
-		<form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
-			{(field) => {
-				const defaultValue = form.options.defaultValues?.[name] ?? 0;
-				const formValue = field.state.value ?? defaultValue;
-				
-				return (
-					<NumberInputField
-						field={field}
-						formValue={formValue}
-						defaultValue={defaultValue}
-						name={String(name)}
-						label={label}
-						description={description}
-						props={props}
-					/>
-				);
-			}}
-		</form.Field>
-	);
+  return (
+    <form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
+      {(field) => {
+        const defaultValue = form.options.defaultValues?.[name] ?? 0;
+        const formValue = field.state.value ?? defaultValue;
+
+        return (
+          <NumberInputField
+            field={field}
+            formValue={formValue}
+            defaultValue={defaultValue}
+            name={String(name)}
+            label={label}
+            description={description}
+            props={props}
+          />
+        );
+      }}
+    </form.Field>
+  );
 };
 
 // Separate component to manage local input state
 function NumberInputField({
-	field,
-	formValue,
-	defaultValue,
-	name,
-	label,
-	description,
-	props,
+  field,
+  formValue,
+  defaultValue,
+  name,
+  label,
+  description,
+  props,
 }: {
-	field: any;
-	formValue: number;
-	defaultValue: number;
-	name: string;
-	label: string;
-	description?: string;
-	props?: InputHTMLAttributes<HTMLInputElement>;
+  field: any;
+  formValue: number;
+  defaultValue: number;
+  name: string;
+  label: string;
+  description?: string;
+  props?: InputHTMLAttributes<HTMLInputElement>;
 }) {
-	const [localValue, setLocalValue] = useState<string>(String(formValue));
-	const [isFocused, setIsFocused] = useState(false);
+  const [localValue, setLocalValue] = useState<string>(String(formValue));
+  const [isFocused, setIsFocused] = useState(false);
 
-	// Sync local value when form value changes externally (when not focused)
-	useEffect(() => {
-		if (!isFocused) {
-			setLocalValue(String(formValue));
-		}
-	}, [formValue, isFocused]);
+  // Sync local value when form value changes externally (when not focused)
+  useEffect(() => {
+    if (!isFocused) {
+      setLocalValue(String(formValue));
+    }
+  }, [formValue, isFocused]);
 
-	return (
-		<div className="space-y-2">
-			<Label htmlFor={name}>{label}</Label>
-			<Input
-				id={name}
-				type="number"
-				value={isFocused ? localValue : String(formValue)}
-				onChange={(event) => {
-					const value = event.target.value;
-					setLocalValue(value);
-					
-					// Update form value if it's a valid number
-					if (value !== "" && value !== "-" && value !== "." && value !== "e" && value !== "E") {
-						const numValue = Number(value);
-						if (!isNaN(numValue) && isFinite(numValue)) {
-							field.handleChange(numValue);
-						}
-					}
-				}}
-				onFocus={() => {
-					setIsFocused(true);
-					setLocalValue(String(formValue));
-				}}
-				onBlur={(event) => {
-					setIsFocused(false);
-					const value = event.target.value;
-					
-					// On blur, ensure we have a valid value
-					if (value === "" || value === "-" || value === "." || isNaN(Number(value)) || !isFinite(Number(value))) {
-						field.handleChange(defaultValue);
-						setLocalValue(String(defaultValue));
-					} else {
-						const numValue = Number(value);
-						if (!isNaN(numValue) && isFinite(numValue)) {
-							field.handleChange(numValue);
-							setLocalValue(String(numValue));
-						} else {
-							field.handleChange(defaultValue);
-							setLocalValue(String(defaultValue));
-						}
-					}
-					field.handleBlur();
-				}}
-				className="w-full"
-				{...props}
-			/>
-			{description && (
-				<p className="text-xs text-gray-400">
-					{description}
-				</p>
-			)}
-			{field.state.meta.errors?.[0] && (
-				<p className="text-sm text-destructive">
-					{getErrorMessage(field.state.meta.errors[0])}
-				</p>
-			)}
-		</div>
-	);
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={name}>{label}</Label>
+      <Input
+        id={name}
+        type="number"
+        value={isFocused ? localValue : String(formValue)}
+        onChange={(event) => {
+          const value = event.target.value;
+          setLocalValue(value);
+
+          // Update form value if it's a valid number
+          if (
+            value !== "" &&
+            value !== "-" &&
+            value !== "." &&
+            value !== "e" &&
+            value !== "E"
+          ) {
+            const numValue = Number(value);
+            if (!isNaN(numValue) && isFinite(numValue)) {
+              field.handleChange(numValue);
+            }
+          }
+        }}
+        onFocus={() => {
+          setIsFocused(true);
+          setLocalValue(String(formValue));
+        }}
+        onBlur={(event) => {
+          setIsFocused(false);
+          const value = event.target.value;
+
+          // On blur, ensure we have a valid value
+          if (
+            value === "" ||
+            value === "-" ||
+            value === "." ||
+            isNaN(Number(value)) ||
+            !isFinite(Number(value))
+          ) {
+            field.handleChange(defaultValue);
+            setLocalValue(String(defaultValue));
+          } else {
+            const numValue = Number(value);
+            if (!isNaN(numValue) && isFinite(numValue)) {
+              field.handleChange(numValue);
+              setLocalValue(String(numValue));
+            } else {
+              field.handleChange(defaultValue);
+              setLocalValue(String(defaultValue));
+            }
+          }
+          field.handleBlur();
+        }}
+        className="w-full"
+        {...props}
+      />
+      {description && <p className="text-xs text-gray-400">{description}</p>}
+      {field.state.meta.errors?.[0] && (
+        <p className="text-sm text-destructive">
+          {getErrorMessage(field.state.meta.errors[0])}
+        </p>
+      )}
+    </div>
+  );
 }
 
 export interface FormSectionProps {
-	form: UseFormReturn<FormValues, any>;
-	fieldValidators: FieldValidators;
+  form: UseFormReturn<FormValues, any>;
+  fieldValidators: FieldValidators;
 }
-

@@ -10,7 +10,7 @@ app/.tanstack/
 # Environment
 # .env*
 !.env.example
-app/.env*
+# app/.env*
 !app/.env.example
 
 # Logs
