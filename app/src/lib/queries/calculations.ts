@@ -46,7 +46,7 @@ export function useArchiveCalculation() {
 	
 	return useMutation<CalculationRecord, Error, string>({
 		mutationFn: async (id: string) => {
-			return apiClient.post<CalculationRecord>(`/${id}`, {});
+			return apiClient.post<CalculationRecord>(`/${id}/archive`, {});
 		},
 		onSuccess: (_data, id) => {
 			queryClient.invalidateQueries({ queryKey: ["calculations"] });
