@@ -1,30 +1,31 @@
 import { createAuthClient } from "better-auth/client";
 import { anonymousClient } from "better-auth/client/plugins";
 
-// Get base URL - use absolute URL for SSR, relative for client
+// Get base URL - always use absolute URL for Better Auth
 function getBaseURL(): string {
-	// In SSR, we need an absolute URL
-	if (typeof window === "undefined") {
-										  // Try to get from environment variable first
-										  // In server context, we can access process.env
-		const envUrl =
-			(typeof process !== "undefined" && process.env?.BETTER_AUTH_URL) ||
-			import.meta.env?.BETTER_AUTH_URL ||
-			import.meta.env?.VITE_BETTER_AUTH_URL;
+	// Try to get from environment variable first
+	const envUrl =
+		(typeof process !== "undefined" && process.env?.BETTER_AUTH_URL) ||
+		import.meta.env?.BETTER_AUTH_URL ||
+		import.meta.env?.VITE_BETTER_AUTH_URL;
 
-		if (envUrl) {
-			// Ensure it includes /api/auth
-			return envUrl.includes("/api/auth") ? envUrl : `${envUrl}/api/auth`;
-		}
-		// Fallback to localhost for development
-		const port =
-			(typeof process !== "undefined" && process.env?.PORT) ||
-			import.meta.env?.VITE_PORT ||
-			"3000";
-		return `http://localhost:${port}/api/auth`;
+	if (envUrl) {
+		// Ensure it includes /api/auth
+		return envUrl.includes("/api/auth") ? envUrl : `${envUrl}/api/auth`;
 	}
-	// Client-side: use relative URL
-	return "/api/auth";
+	
+	// Fallback: use window.location for client, or localhost for SSR
+	if (typeof window !== "undefined") {
+		const origin = window.location.origin;
+		return `${origin}/api/auth`;
+	}
+	
+	// SSR fallback to localhost
+	const port =
+		(typeof process !== "undefined" && process.env?.PORT) ||
+		import.meta.env?.VITE_PORT ||
+		"3000";
+	return `http://localhost:${port}/api/auth`;
 }
 
 export const authClient = createAuthClient({
