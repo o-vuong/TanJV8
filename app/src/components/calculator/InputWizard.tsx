@@ -161,28 +161,25 @@ export function InputWizard({
 	useEffect(() => {
 		if (isAuthenticated) return;
 
-		const unsubscribe = form.subscribe((state) => {
-			// Clear existing timeout
-			if (saveTimeoutRef.current) {
-				clearTimeout(saveTimeoutRef.current);
-			}
+		// Clear existing timeout
+		if (saveTimeoutRef.current) {
+			clearTimeout(saveTimeoutRef.current);
+		}
 
-			// Debounce save by 500ms
-			saveTimeoutRef.current = setTimeout(() => {
-				const formValues = state.values;
-				if (formValues) {
-					saveTemporaryFormState(formValues);
-				}
-			}, 500);
-		});
+		// Debounce save by 500ms
+		saveTimeoutRef.current = setTimeout(() => {
+			const formValues = form.state.values;
+			if (formValues) {
+				saveTemporaryFormState(formValues);
+			}
+		}, 500);
 
 		return () => {
-			unsubscribe();
 			if (saveTimeoutRef.current) {
 				clearTimeout(saveTimeoutRef.current);
 			}
 		};
-	}, [form, isAuthenticated]);
+	}, [form.state.values, isAuthenticated, form]);
 
 	return (
 		<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
