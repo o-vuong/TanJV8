@@ -40,21 +40,10 @@ export const Route = createFileRoute("/api/calculations/$id")({
 				});
 			},
 
-			// POST /api/calculations/:id/archive
+			// POST /api/calculations/:id - archive calculation
 			POST: async ({ request, params }) => {
 				const session = await requireAuth(request);
 				const { id } = params;
-
-				// Check if the request is for archiving
-				const url = new URL(request.url);
-				const isArchive = url.pathname.endsWith("/archive");
-
-				if (!isArchive) {
-					return new Response(JSON.stringify({ error: "Invalid endpoint" }), {
-						status: 400,
-						headers: { "Content-Type": "application/json" },
-					});
-				}
 
 				// Verify user has access to this calculation
 				const calculation = await prisma.calculation.findFirst({

@@ -9,47 +9,53 @@ const createGroupSchema = z.object({
 
 export const Route = createFileRoute("/api/groups/")({
 	server: {
-		handlers: {
-			// GET /api/groups - List all groups for the current user
-			GET: async ({ request }) => {
-				const session = await requireAuth(request);
+			handlers: {
+				// GET /api/groups - List all groups for the current user
+				GET: async ({ request }) => {
+					const session = await requireAuth(request);
 
-				const groups = await prisma.group.findMany({
-					where: {
-						userId: session.user.id,
-					},
-					include: {
-						projects: {
-							include: {
-								calculations: {
-									where: {
-										archived: false,
-									},
-									orderBy: {
-										version: "desc",
-									},
-									take: 1, // Just get count, not all calculations
+					// Fetch groups/projects and count calculations separately to avoid truncated counts from limited includes.
+					const groups = await prisma.group.findMany({
+						where: {
+							userId: session.user.id,
+						},
+						include: {
+							projects: {
+								orderBy: {
+									createdAt: "desc",
 								},
 							},
-							orderBy: {
-								createdAt: "desc",
+						},
+						orderBy: {
+							createdAt: "desc",
+						},
+					});
+
+					const calculationCounts = await prisma.calculation.groupBy({
+						by: ["projectId"],
+						where: {
+							archived: false,
+							project: {
+								group: {
+									userId: session.user.id,
+								},
 							},
 						},
-					},
-					orderBy: {
-						createdAt: "desc",
-					},
-				});
+						_count: true,
+					});
+					const countMap = new Map(
+						calculationCounts.map(({ projectId, _count }) => [projectId, _count]),
+					);
 
-				// Transform to include calculation counts
-				const groupsWithCounts = groups.map((group) => ({
-					...group,
-					projects: group.projects.map((project) => ({
-						...project,
-						calculations: [], // Don't send calculation data, just metadata
-						calculationCount: project.calculations.length,
-					})),
-				}));
+					// Transform to include calculation counts
+					const groupsWithCounts = groups.map((group) => ({
+						...group,
+						projects: group.projects.map((project) => ({
+							...project,
+							calculations: [], // Don't send calculation data, just metadata
+							calculationCount: countMap.get(project.id) ?? 0,
+						})),
+					}));
 
 				return new Response(JSON.stringify(groupsWithCounts), {
 					status: 200,
@@ -103,4 +109,3 @@ export const Route = createFileRoute("/api/groups/")({
 		},
 	},
 });
-
