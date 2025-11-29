@@ -1,4 +1,5 @@
-import type { UseFormReturn } from "@tanstack/react-form";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FormInstance = any;
 import { Home, Square, Wind, Users, Gauge, Thermometer } from "lucide-react";
 import type { ComponentType, InputHTMLAttributes, ReactNode } from "react";
 import { Input } from "../ui/input";
@@ -72,12 +73,12 @@ export type FormValues = {
 export type FieldValidators = Record<keyof FormValues, any>;
 
 interface FormSectionProps {
-  form: UseFormReturn<FormValues, any>;
+  form: FormInstance;
   fieldValidators: FieldValidators;
 }
 
 const renderNumberField = (
-  form: UseFormReturn<FormValues, any>,
+  form: FormInstance,
   fieldValidators: FieldValidators,
   name: keyof FormValues,
   label: string,
@@ -85,7 +86,7 @@ const renderNumberField = (
   props?: InputHTMLAttributes<HTMLInputElement>,
 ) => (
   <form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
-    {(field) => {
+    {(field: any) => {
       const defaultValue = form.options.defaultValues?.[name] ?? 0;
       const displayValue = field.state.value ?? defaultValue;
 
@@ -106,22 +107,54 @@ const renderNumberField = (
             type="number"
             value={displayValue}
             onChange={(event) => {
-              const value = event.target.value;
-              if (value === "" || value === "-" || value === ".") {
-                field.handleChange(defaultValue);
-                return;
-              }
-              const numValue = Number(value);
-              if (!isNaN(numValue)) {
-                field.handleChange(numValue);
+              try {
+                const value = event.target.value;
+                // Allow empty, minus, or decimal point during typing
+                if (value === "" || value === "-" || value === "." || value === "-.") {
+                  // Don't update form value yet, let user continue typing
+                  return;
+                }
+                // Handle scientific notation and other edge cases
+                if (value === "e" || value === "E" || value === "+" || value === "e+" || value === "E+") {
+                  return;
+                }
+                const numValue = Number(value);
+                // Only update if it's a valid finite number
+                if (!isNaN(numValue) && isFinite(numValue)) {
+                  field.handleChange(numValue);
+                }
+              } catch (error) {
+                // Silently handle any errors during input
+                console.debug("Input error handled:", error);
               }
             }}
             onBlur={(event) => {
-              const value = event.target.value;
-              if (value === "" || isNaN(Number(value))) {
+              try {
+                const value = event.target.value;
+                // On blur, ensure we have a valid value
+                if (
+                  value === "" ||
+                  value === "-" ||
+                  value === "." ||
+                  value === "-." ||
+                  isNaN(Number(value)) ||
+                  !isFinite(Number(value))
+                ) {
+                  field.handleChange(defaultValue);
+                } else {
+                  const numValue = Number(value);
+                  if (!isNaN(numValue) && isFinite(numValue)) {
+                    field.handleChange(numValue);
+                  } else {
+                    field.handleChange(defaultValue);
+                  }
+                }
+                field.handleBlur();
+              } catch (error) {
+                // Fallback to default value on any error
                 field.handleChange(defaultValue);
+                field.handleBlur();
               }
-              field.handleBlur();
             }}
             className="w-full"
             {...props}

@@ -1,4 +1,5 @@
-import type { UseFormReturn } from "@tanstack/react-form";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FormInstance = any;
 import type { InputHTMLAttributes } from "react";
 import { useEffect, useState } from "react";
 import { Label } from "../ui/label";
@@ -35,7 +36,7 @@ export const getErrorMessage = (error: unknown): string => {
 };
 
 export const renderNumberField = (
-  form: UseFormReturn<FormValues, any>,
+  form: FormInstance,
   fieldValidators: FieldValidators,
   name: keyof FormValues,
   label: string,
@@ -44,7 +45,7 @@ export const renderNumberField = (
 ) => {
   return (
     <form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
-      {(field) => {
+      {(field: any) => {
         const defaultValue = form.options.defaultValues?.[name] ?? 0;
         const formValue = field.state.value ?? defaultValue;
 
@@ -100,21 +101,34 @@ function NumberInputField({
         type="number"
         value={isFocused ? localValue : String(formValue)}
         onChange={(event) => {
-          const value = event.target.value;
-          setLocalValue(value);
+          try {
+            const value = event.target.value;
+            setLocalValue(value);
 
-          // Update form value if it's a valid number
-          if (
-            value !== "" &&
-            value !== "-" &&
-            value !== "." &&
-            value !== "e" &&
-            value !== "E"
-          ) {
+            // Allow empty, minus, decimal point, or scientific notation during typing
+            if (
+              value === "" ||
+              value === "-" ||
+              value === "." ||
+              value === "-." ||
+              value === "e" ||
+              value === "E" ||
+              value === "+" ||
+              value === "e+" ||
+              value === "E+"
+            ) {
+              // Don't update form value yet, let user continue typing
+              return;
+            }
+
+            // Update form value if it's a valid number
             const numValue = Number(value);
             if (!isNaN(numValue) && isFinite(numValue)) {
               field.handleChange(numValue);
             }
+          } catch (error) {
+            // Silently handle any errors during input
+            console.debug("Input error handled:", error);
           }
         }}
         onFocus={() => {
@@ -122,30 +136,38 @@ function NumberInputField({
           setLocalValue(String(formValue));
         }}
         onBlur={(event) => {
-          setIsFocused(false);
-          const value = event.target.value;
+          try {
+            setIsFocused(false);
+            const value = event.target.value;
 
-          // On blur, ensure we have a valid value
-          if (
-            value === "" ||
-            value === "-" ||
-            value === "." ||
-            isNaN(Number(value)) ||
-            !isFinite(Number(value))
-          ) {
-            field.handleChange(defaultValue);
-            setLocalValue(String(defaultValue));
-          } else {
-            const numValue = Number(value);
-            if (!isNaN(numValue) && isFinite(numValue)) {
-              field.handleChange(numValue);
-              setLocalValue(String(numValue));
-            } else {
+            // On blur, ensure we have a valid value
+            if (
+              value === "" ||
+              value === "-" ||
+              value === "." ||
+              value === "-." ||
+              isNaN(Number(value)) ||
+              !isFinite(Number(value))
+            ) {
               field.handleChange(defaultValue);
               setLocalValue(String(defaultValue));
+            } else {
+              const numValue = Number(value);
+              if (!isNaN(numValue) && isFinite(numValue)) {
+                field.handleChange(numValue);
+                setLocalValue(String(numValue));
+              } else {
+                field.handleChange(defaultValue);
+                setLocalValue(String(defaultValue));
+              }
             }
+            field.handleBlur();
+          } catch (error) {
+            // Fallback to default value on any error
+            field.handleChange(defaultValue);
+            setLocalValue(String(defaultValue));
+            field.handleBlur();
           }
-          field.handleBlur();
         }}
         className="w-full"
         {...props}
@@ -161,6 +183,6 @@ function NumberInputField({
 }
 
 export interface FormSectionProps {
-  form: UseFormReturn<FormValues, any>;
+  form: FormInstance;
   fieldValidators: FieldValidators;
 }
