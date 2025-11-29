@@ -79,8 +79,18 @@ async function geocodeZipCode(zipCode: string): Promise<GeocodeResult> {
 		let latitude = 39.0; // Default to middle US
 		let longitude = -98.0;
 		
+		// West Coast (9xxx)
+		if (zipNum >= 90000) {
+			latitude = 34.0 + (zipNum / 10000) * 2;
+			longitude = -118.0 - (zipNum / 10000) * 2;
+		}
+		// Mountain/West (8xxx)
+		else if (zipNum >= 80000) {
+			latitude = 38.0 + (zipNum / 10000) * 3;
+			longitude = -105.0 - (zipNum / 10000) * 5;
+		}
 		// East Coast (0xxx-2xxx)
-		if (zipNum < 30000) {
+		else if (zipNum < 30000) {
 			latitude = 40.0 + (zipNum / 10000) * 5;
 			longitude = -75.0 - (zipNum / 10000) * 10;
 		}
@@ -93,16 +103,6 @@ async function geocodeZipCode(zipCode: string): Promise<GeocodeResult> {
 		else if (zipNum < 70000) {
 			latitude = 40.0 + (zipNum / 10000) * 5;
 			longitude = -90.0 - (zipNum / 10000) * 5;
-		}
-		// Mountain/West (8xxx-9xxx)
-		else if (zipNum >= 80000) {
-			latitude = 38.0 + (zipNum / 10000) * 3;
-			longitude = -105.0 - (zipNum / 10000) * 5;
-		}
-		// West Coast (9xxx)
-		else if (zipNum >= 90000) {
-			latitude = 34.0 + (zipNum / 10000) * 2;
-			longitude = -118.0 - (zipNum / 10000) * 2;
 		}
 		
 		return { latitude, longitude };
@@ -208,4 +208,3 @@ export async function fetchClimateDataForZip(
 		longitude,
 	};
 }
-
