@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createApiClient } from "../api/client";
 import { createCRUDHooks } from "../crud/factory";
 
@@ -38,3 +39,18 @@ export const {
 	listKey: calculationListKey,
 	detailKey: calculationDetailKey,
 } = calculationCrud;
+
+// Archive mutation hook
+export function useArchiveCalculation() {
+	const queryClient = useQueryClient();
+	
+	return useMutation<CalculationRecord, Error, string>({
+		mutationFn: async (id: string) => {
+			return apiClient.post<CalculationRecord>(`/${id}`, {});
+		},
+		onSuccess: (_data, id) => {
+			queryClient.invalidateQueries({ queryKey: ["calculations"] });
+			queryClient.removeQueries({ queryKey: calculationDetailKey(id) });
+		},
+	});
+}
