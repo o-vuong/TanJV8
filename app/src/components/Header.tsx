@@ -16,16 +16,12 @@ import { Button } from "./ui/button";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   const navigate = useNavigate();
 
-  // Only use useSession on client to avoid SSR errors
-  const sessionResult = isClient ? useSession() : { data: null, isPending: false };
-  const session = sessionResult?.data ?? null;
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  // Always call useSession hook unconditionally (React Rules of Hooks)
+  // Better Auth's useSession should handle SSR internally
+  // If it doesn't work on SSR, the hook will need to be fixed at the source
+  const { data: session, isPending } = useSession();
 
   const handleSignOut = async () => {
     await signOut();
