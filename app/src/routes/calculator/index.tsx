@@ -8,6 +8,7 @@ const calculatorSearchSchema = z.object({
 
 export const Route = createFileRoute("/calculator/")({
 	validateSearch: calculatorSearchSchema,
+	ssr: "spa-mode", // Client-only route since it uses client-side hooks and storage
 	component: CalculatorPage,
 });
 

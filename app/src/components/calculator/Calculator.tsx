@@ -18,6 +18,27 @@ interface CalculatorProps {
 }
 
 export function Calculator({ demoMode = false }: CalculatorProps) {
+	const [isClient, setIsClient] = useState(false);
+
+	// Ensure this only runs on the client
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	// Don't render during SSR
+	if (!isClient) {
+		return (
+			<div className="space-y-8">
+				<StepIndicator currentStep="location" />
+				<div className="text-center text-gray-400">Loading...</div>
+			</div>
+		);
+	}
+
+	return <CalculatorClient demoMode={demoMode} />;
+}
+
+function CalculatorClient({ demoMode = false }: CalculatorProps) {
 	const { data: session } = useSession();
 	const isAuthenticated = !!session?.user;
 
