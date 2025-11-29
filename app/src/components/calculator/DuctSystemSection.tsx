@@ -65,7 +65,8 @@ export function DuctSystemSection({ form, fieldValidators }: FormSectionProps) {
 					"ductEfficiency",
 					"Duct Efficiency",
 					"Duct system efficiency (0-1, higher is better)",
-					{ step: 0.05, min: 0, max: 1 }
+					{ step: 0.05, min: 0, max: 1 },
+					"%"
 				)}
 			</div>
 		</section>

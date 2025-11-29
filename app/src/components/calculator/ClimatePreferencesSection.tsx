@@ -21,7 +21,8 @@ export function ClimatePreferencesSection({ form, fieldValidators }: FormSection
 					"indoorTemp",
 					"Indoor Temperature",
 					"Desired indoor temperature in Fahrenheit",
-					{ min: 60, max: 80 }
+					{ min: 60, max: 80 },
+					"°F"
 				)}
 			</div>
 		</section>

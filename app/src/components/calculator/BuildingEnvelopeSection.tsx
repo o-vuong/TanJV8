@@ -21,7 +21,8 @@ export function BuildingEnvelopeSection({ form, fieldValidators }: FormSectionPr
 					"wallArea",
 					"Wall Area",
 					"Total exterior wall area in square feet",
-					{ min: 0 }
+					{ min: 0 },
+					"sq ft"
 				)}
 				{renderNumberField(
 					form,
@@ -37,7 +38,8 @@ export function BuildingEnvelopeSection({ form, fieldValidators }: FormSectionPr
 					"roofArea",
 					"Roof Area",
 					"Total roof/ceiling area in square feet",
-					{ min: 0 }
+					{ min: 0 },
+					"sq ft"
 				)}
 				{renderNumberField(
 					form,
@@ -53,7 +55,8 @@ export function BuildingEnvelopeSection({ form, fieldValidators }: FormSectionPr
 					"windowArea",
 					"Window Area",
 					"Total window area in square feet",
-					{ min: 0 }
+					{ min: 0 },
+					"sq ft"
 				)}
 				{renderNumberField(
 					form,

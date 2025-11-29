@@ -2,6 +2,7 @@
 type FormInstance = any;
 import type { InputHTMLAttributes } from "react";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 
@@ -41,7 +42,8 @@ export const renderNumberField = (
   name: keyof FormValues,
   label: string,
   description?: string,
-  props?: InputHTMLAttributes<HTMLInputElement>
+  props?: InputHTMLAttributes<HTMLInputElement>,
+  unit?: string
 ) => {
   return (
     <form.Field name={name} validators={{ onChange: fieldValidators[name] }}>
@@ -58,6 +60,7 @@ export const renderNumberField = (
             label={label}
             description={description}
             props={props}
+            unit={unit}
           />
         );
       }}
@@ -74,6 +77,7 @@ function NumberInputField({
   label,
   description,
   props,
+  unit,
 }: {
   field: any;
   formValue: number;
@@ -82,6 +86,7 @@ function NumberInputField({
   label: string;
   description?: string;
   props?: InputHTMLAttributes<HTMLInputElement>;
+  unit?: string;
 }) {
   const [localValue, setLocalValue] = useState<string>(String(formValue));
   const [isFocused, setIsFocused] = useState(false);
@@ -96,11 +101,12 @@ function NumberInputField({
   return (
     <div className="space-y-2">
       <Label htmlFor={name}>{label}</Label>
-      <Input
-        id={name}
-        type="number"
-        value={isFocused ? localValue : String(formValue)}
-        onChange={(event) => {
+      <div className="relative">
+        <Input
+          id={name}
+          type="number"
+          value={isFocused ? localValue : String(formValue)}
+          onChange={(event) => {
           try {
             const value = event.target.value;
             setLocalValue(value);
@@ -169,9 +175,15 @@ function NumberInputField({
             field.handleBlur();
           }
         }}
-        className="w-full"
-        {...props}
-      />
+          {...props}
+          className={cn("max-w-xs w-full", unit && "pr-12", props?.className)}
+        />
+        {unit && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">
+            {unit}
+          </span>
+        )}
+      </div>
       {description && <p className="text-xs text-gray-400">{description}</p>}
       {field.state.meta.errors?.[0] && (
         <p className="text-sm text-destructive">

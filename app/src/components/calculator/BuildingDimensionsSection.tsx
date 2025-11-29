@@ -21,7 +21,8 @@ export function BuildingDimensionsSection({ form, fieldValidators }: FormSection
 					"area",
 					"Floor Area",
 					"Total floor area of the building in square feet",
-					{ min: 1 }
+					{ min: 1 },
+					"sq ft"
 				)}
 				{renderNumberField(
 					form,
@@ -29,7 +30,8 @@ export function BuildingDimensionsSection({ form, fieldValidators }: FormSection
 					"ceilingHeight",
 					"Ceiling Height",
 					"Average ceiling height in feet",
-					{ min: 1 }
+					{ min: 1 },
+					"ft"
 				)}
 			</div>
 		</section>

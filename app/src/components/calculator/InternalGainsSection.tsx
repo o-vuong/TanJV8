@@ -21,7 +21,8 @@ export function InternalGainsSection({ form, fieldValidators }: FormSectionProps
 					"occupants",
 					"Occupants",
 					"Number of people in the building",
-					{ min: 0, step: 1 }
+					{ min: 0, step: 1 },
+					"people"
 				)}
 				{renderNumberField(
 					form,
@@ -29,7 +30,8 @@ export function InternalGainsSection({ form, fieldValidators }: FormSectionProps
 					"lighting",
 					"Lighting",
 					"Total lighting load in watts",
-					{ min: 0, step: 10 }
+					{ min: 0, step: 10 },
+					"W"
 				)}
 				{renderNumberField(
 					form,
@@ -37,7 +39,8 @@ export function InternalGainsSection({ form, fieldValidators }: FormSectionProps
 					"appliances",
 					"Appliances",
 					"Total appliance load in watts",
-					{ min: 0, step: 10 }
+					{ min: 0, step: 10 },
+					"W"
 				)}
 			</div>
 		</section>
