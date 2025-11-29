@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { createAuthClient } from "better-auth/client";
 import { anonymousClient } from "better-auth/client/plugins";
 
@@ -33,10 +34,10 @@ export const authClient = createAuthClient({
 	plugins: [anonymousClient()],
 });
 
-// Export useSession hook from Better Auth
-// Better Auth's useSession is a React hook that must be used on the client
-export const useSession = () => {
-	// Ensure we're on the client
+// Export useSession hook - Better Auth exports it as a store/atom
+// We need to wrap it in a React hook using useSyncExternalStore
+export function useSession() {
+	// During SSR, return safe defaults
 	if (typeof window === "undefined") {
 		return {
 			data: null,
@@ -45,9 +46,30 @@ export const useSession = () => {
 		};
 	}
 	
-	// Use the hook from the client
-	return authClient.useSession();
-};
+	// Use React's useSyncExternalStore to subscribe to Better Auth's session store
+	const sessionStore = authClient.useSession;
+	
+	return useSyncExternalStore(
+		(listener) => {
+			// Subscribe to the store
+			if (sessionStore && typeof sessionStore.subscribe === "function") {
+				return sessionStore.subscribe(listener);
+			}
+			return () => {};
+		},
+		() => {
+			// Get the current value
+			if (sessionStore && typeof sessionStore.get === "function") {
+				return sessionStore.get();
+			}
+			return { data: null, isPending: false, error: null };
+		},
+		() => {
+			// Server snapshot
+			return { data: null, isPending: true, error: null };
+		}
+	);
+}
 
 export const {
 	signIn,
