@@ -1,56 +1,57 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { createApiClient } from "../lib/api/client";
 import { useSession } from "../lib/auth/client";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { FolderOpen, Plus, Calculator, Calendar } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { useGroups, useCreateGroup, useCreateProject, type Group, type Project } from "../lib/queries/groups";
+import { useState } from "react";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 
 export const Route = createFileRoute("/projects")({
 	component: ProjectsPage,
 });
 
-const apiClient = createApiClient({ baseUrl: "/api" });
-
-interface Group {
-	id: string;
-	name: string;
-	createdAt: string;
-	projects: Project[];
-}
-
-interface Project {
-	id: string;
-	name: string;
-	description: string | null;
-	createdAt: string;
-	calculations: Calculation[];
-}
-
-interface Calculation {
-	id: string;
-	version: number;
-	createdAt: string;
-	inputs: unknown;
-	results: unknown;
-}
-
 function ProjectsPage() {
 	const { data: session } = useSession();
+	const { data: groups, isLoading } = useGroups();
+	const createGroup = useCreateGroup();
+	const createProject = useCreateProject();
+	const [showCreateGroup, setShowCreateGroup] = useState(false);
+	const [showCreateProject, setShowCreateProject] = useState(false);
+	const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+	const [groupName, setGroupName] = useState("");
+	const [projectName, setProjectName] = useState("");
+	const [projectDescription, setProjectDescription] = useState("");
 
-	// Note: You'll need to create API endpoints for groups and projects
-	// For now, this is a placeholder structure
-	const { data: groups, isLoading } = useQuery({
-		queryKey: ["groups"],
-		queryFn: async () => {
-			// TODO: Implement groups API endpoint
-			// const response = await apiClient.get<Group[]>("/groups");
-			// return response;
-			return [] as Group[];
-		},
-		enabled: !!session?.user,
-	});
+	const handleCreateGroup = async () => {
+		if (!groupName.trim()) return;
+		try {
+			await createGroup.mutateAsync({ name: groupName });
+			setGroupName("");
+			setShowCreateGroup(false);
+		} catch (error) {
+			console.error("Failed to create group:", error);
+		}
+	};
+
+	const handleCreateProject = async () => {
+		if (!projectName.trim() || !selectedGroupId) return;
+		try {
+			await createProject.mutateAsync({
+				name: projectName,
+				description: projectDescription || undefined,
+				groupId: selectedGroupId,
+			});
+			setProjectName("");
+			setProjectDescription("");
+			setShowCreateProject(false);
+			setSelectedGroupId(null);
+		} catch (error) {
+			console.error("Failed to create project:", error);
+		}
+	};
 
 	return (
 		<ProtectedRoute>
@@ -78,7 +79,13 @@ function ProjectsPage() {
 												{group.name}
 											</h2>
 										</div>
-										<Button className="bg-blue-600 hover:bg-blue-700">
+										<Button
+											className="bg-blue-600 hover:bg-blue-700"
+											onClick={() => {
+												setSelectedGroupId(group.id);
+												setShowCreateProject(true);
+											}}
+										>
 											<Plus className="w-4 h-4 mr-2" />
 											New Project
 										</Button>
@@ -106,8 +113,8 @@ function ProjectsPage() {
 															<div className="flex items-center gap-2 text-sm text-gray-400">
 																<Calculator className="w-4 h-4" />
 																<span>
-																	{project.calculations.length} calculation
-																	{project.calculations.length !== 1 ? "s" : ""}
+																	{project.calculationCount ?? project.calculations?.length ?? 0} calculation
+																	{(project.calculationCount ?? project.calculations?.length ?? 0) !== 1 ? "s" : ""}
 																</span>
 															</div>
 															<div className="flex items-center gap-2 text-sm text-gray-400">
@@ -137,7 +144,13 @@ function ProjectsPage() {
 									) : (
 										<div className="text-center py-8 bg-slate-800/30 rounded-lg border border-slate-700">
 											<p className="text-gray-400 mb-4">No projects yet</p>
-											<Button className="bg-blue-600 hover:bg-blue-700">
+											<Button
+												className="bg-blue-600 hover:bg-blue-700"
+												onClick={() => {
+													setSelectedGroupId(group.id);
+													setShowCreateProject(true);
+												}}
+											>
 												<Plus className="w-4 h-4 mr-2" />
 												Create First Project
 											</Button>
@@ -155,10 +168,115 @@ function ProjectsPage() {
 							<p className="text-gray-400 mb-6">
 								Create your first group to start organizing calculations
 							</p>
-							<Button className="bg-blue-600 hover:bg-blue-700">
+							<Button
+								className="bg-blue-600 hover:bg-blue-700"
+								onClick={() => setShowCreateGroup(true)}
+							>
 								<Plus className="w-4 h-4 mr-2" />
 								Create First Group
 							</Button>
+						</div>
+					)}
+
+					{/* Create Group Modal */}
+					{showCreateGroup && (
+						<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+							<div className="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-md">
+								<h3 className="text-xl font-semibold text-white mb-4">
+									Create New Group
+								</h3>
+								<div className="space-y-4">
+									<div>
+										<Label htmlFor="group-name" className="text-gray-300">
+											Group Name
+										</Label>
+										<Input
+											id="group-name"
+											value={groupName}
+											onChange={(e) => setGroupName(e.target.value)}
+											className="mt-1 bg-slate-900 border-slate-600 text-white"
+											placeholder="e.g., Residential Projects"
+										/>
+									</div>
+									<div className="flex gap-2 justify-end">
+										<Button
+											variant="outline"
+											onClick={() => {
+												setShowCreateGroup(false);
+												setGroupName("");
+											}}
+											className="border-slate-600 text-gray-300"
+										>
+											Cancel
+										</Button>
+										<Button
+											onClick={handleCreateGroup}
+											disabled={!groupName.trim() || createGroup.isPending}
+											className="bg-blue-600 hover:bg-blue-700"
+										>
+											{createGroup.isPending ? "Creating..." : "Create Group"}
+										</Button>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Create Project Modal */}
+					{showCreateProject && (
+						<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+							<div className="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-md">
+								<h3 className="text-xl font-semibold text-white mb-4">
+									Create New Project
+								</h3>
+								<div className="space-y-4">
+									<div>
+										<Label htmlFor="project-name" className="text-gray-300">
+											Project Name
+										</Label>
+										<Input
+											id="project-name"
+											value={projectName}
+											onChange={(e) => setProjectName(e.target.value)}
+											className="mt-1 bg-slate-900 border-slate-600 text-white"
+											placeholder="e.g., 123 Main St"
+										/>
+									</div>
+									<div>
+										<Label htmlFor="project-description" className="text-gray-300">
+											Description (optional)
+										</Label>
+										<Input
+											id="project-description"
+											value={projectDescription}
+											onChange={(e) => setProjectDescription(e.target.value)}
+											className="mt-1 bg-slate-900 border-slate-600 text-white"
+											placeholder="Additional details..."
+										/>
+									</div>
+									<div className="flex gap-2 justify-end">
+										<Button
+											variant="outline"
+											onClick={() => {
+												setShowCreateProject(false);
+												setProjectName("");
+												setProjectDescription("");
+												setSelectedGroupId(null);
+											}}
+											className="border-slate-600 text-gray-300"
+										>
+											Cancel
+										</Button>
+										<Button
+											onClick={handleCreateProject}
+											disabled={!projectName.trim() || createProject.isPending}
+											className="bg-blue-600 hover:bg-blue-700"
+										>
+											{createProject.isPending ? "Creating..." : "Create Project"}
+										</Button>
+									</div>
+								</div>
+							</div>
 						</div>
 					)}
 				</div>
