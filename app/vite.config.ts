@@ -10,7 +10,7 @@ export default defineConfig({
     exclude: ["@prisma/client"],
   },
   ssr: {
-    external: ["@prisma/client"],
+    external: ["@prisma/client", "better-auth/client"],
     noExternal: [],
   },
   server: {

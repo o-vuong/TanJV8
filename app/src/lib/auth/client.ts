@@ -32,20 +32,10 @@ export const authClient = createAuthClient({
 	plugins: [anonymousClient()],
 });
 
-// SSR-safe useSession wrapper
-// Better Auth's useSession only works on client
-export function useSession() {
-	// During SSR, return a safe default
-	if (typeof window === "undefined") {
-		return {
-			data: null,
-			isPending: false,
-			error: null,
-		};
-	}
-	
-	return authClient.useSession();
-}
+// Export useSession directly from Better Auth
+// Components that use this should handle SSR themselves (check for window !== undefined)
+// or wrap usage in client-only components
+export const useSession = authClient.useSession;
 
 export const {
 	signIn,
