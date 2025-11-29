@@ -2,6 +2,7 @@
 type FormInstance = any;
 import { Home, Square, Wind, Users, Gauge, Thermometer } from "lucide-react";
 import type { ComponentType, InputHTMLAttributes, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import {
   Select,
@@ -102,62 +103,12 @@ const renderNumberField = (
           data-invalid={hasError}
         >
           <FieldLabel>{label}</FieldLabel>
-          <Input
-            id={String(name)}
-            type="number"
-            value={displayValue}
-            onChange={(event) => {
-              try {
-                const value = event.target.value;
-                // Allow empty, minus, or decimal point during typing
-                if (value === "" || value === "-" || value === "." || value === "-.") {
-                  // Don't update form value yet, let user continue typing
-                  return;
-                }
-                // Handle scientific notation and other edge cases
-                if (value === "e" || value === "E" || value === "+" || value === "e+" || value === "E+") {
-                  return;
-                }
-                const numValue = Number(value);
-                // Only update if it's a valid finite number
-                if (!isNaN(numValue) && isFinite(numValue)) {
-                  field.handleChange(numValue);
-                }
-              } catch (error) {
-                // Silently handle any errors during input
-                console.debug("Input error handled:", error);
-              }
-            }}
-            onBlur={(event) => {
-              try {
-                const value = event.target.value;
-                // On blur, ensure we have a valid value
-                if (
-                  value === "" ||
-                  value === "-" ||
-                  value === "." ||
-                  value === "-." ||
-                  isNaN(Number(value)) ||
-                  !isFinite(Number(value))
-                ) {
-                  field.handleChange(defaultValue);
-                } else {
-                  const numValue = Number(value);
-                  if (!isNaN(numValue) && isFinite(numValue)) {
-                    field.handleChange(numValue);
-                  } else {
-                    field.handleChange(defaultValue);
-                  }
-                }
-                field.handleBlur();
-              } catch (error) {
-                // Fallback to default value on any error
-                field.handleChange(defaultValue);
-                field.handleBlur();
-              }
-            }}
-            className="w-full"
-            {...props}
+          <NumberInputField
+            field={field}
+            defaultValue={defaultValue}
+            formValue={displayValue}
+            name={String(name)}
+            inputProps={props}
           />
           {description && <FieldDescription>{description}</FieldDescription>}
           {hasError && errorObject && <FieldError errors={[errorObject]} />}
@@ -477,5 +428,104 @@ export function ClimatePreferencesSection({
         )}
       </div>
     </FormSectionShell>
+  );
+}
+
+// Dedicated number field component so users can type partial input (e.g. "-", ".") without fighting validation.
+function NumberInputField({
+  field,
+  formValue,
+  defaultValue,
+  name,
+  inputProps,
+}: {
+  field: any;
+  formValue: number;
+  defaultValue: number;
+  name: string;
+  inputProps?: InputHTMLAttributes<HTMLInputElement>;
+}) {
+  const [localValue, setLocalValue] = useState<string>(String(formValue));
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Keep local string in sync with form state when we are not actively editing.
+  useEffect(() => {
+    if (!isFocused) {
+      setLocalValue(String(formValue));
+    }
+  }, [formValue, isFocused]);
+
+  return (
+    <Input
+      id={name}
+      type="number"
+      value={isFocused ? localValue : String(formValue)}
+      onChange={(event) => {
+        try {
+          const value = event.target.value;
+          setLocalValue(value);
+
+          // Allow incomplete numeric strings while typing.
+          if (
+            value === "" ||
+            value === "-" ||
+            value === "." ||
+            value === "-." ||
+            value === "e" ||
+            value === "E" ||
+            value === "+" ||
+            value === "e+" ||
+            value === "E+"
+          ) {
+            return;
+          }
+
+          const numValue = Number(value);
+          if (!Number.isNaN(numValue) && Number.isFinite(numValue)) {
+            field.handleChange(numValue);
+          }
+        } catch (error) {
+          console.debug("Input error handled:", error);
+        }
+      }}
+      onFocus={() => {
+        setIsFocused(true);
+        setLocalValue(String(formValue));
+      }}
+      onBlur={(event) => {
+        try {
+          setIsFocused(false);
+          const value = event.target.value;
+
+          if (
+            value === "" ||
+            value === "-" ||
+            value === "." ||
+            value === "-." ||
+            Number.isNaN(Number(value)) ||
+            !Number.isFinite(Number(value))
+          ) {
+            field.handleChange(defaultValue);
+            setLocalValue(String(defaultValue));
+          } else {
+            const numValue = Number(value);
+            if (!Number.isNaN(numValue) && Number.isFinite(numValue)) {
+              field.handleChange(numValue);
+              setLocalValue(String(numValue));
+            } else {
+              field.handleChange(defaultValue);
+              setLocalValue(String(defaultValue));
+            }
+          }
+          field.handleBlur();
+        } catch (error) {
+          field.handleChange(defaultValue);
+          setLocalValue(String(defaultValue));
+          field.handleBlur();
+        }
+      }}
+      className="w-full"
+      {...inputProps}
+    />
   );
 }

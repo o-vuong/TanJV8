@@ -2,9 +2,14 @@ import type { ManualJInputs, ManualJResults } from "@manualj/calc-engine";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import { Home } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { z } from "zod";
 import type { ClimateData } from "../../lib/queries/location";
+import { useSession } from "../../lib/auth/client";
+import {
+	saveTemporaryFormState,
+	loadTemporaryFormState,
+} from "../../lib/storage/temporary";
 import { getManualJWorker } from "../../lib/workers/manualj-client";
 import { Button } from "../ui/button";
 import {
@@ -64,29 +69,38 @@ export function InputWizard({
 	onComplete,
 	onBack,
 }: InputWizardProps) {
+	const { data: session } = useSession();
+	const isAuthenticated = !!session?.user;
 	const [error, setError] = useState<string | null>(null);
 	const [progress, setProgress] = useState<number | null>(null);
 	const [isCalculating, setIsCalculating] = useState(false);
+	const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	// Load saved form state for unauthenticated users
+	const savedFormState = loadTemporaryFormState();
+	const defaultValues: FormValues = savedFormState
+		? { ...savedFormState } as FormValues
+		: {
+				area: 2400,
+				ceilingHeight: 8,
+				wallArea: 700,
+				wallR: 13,
+				roofArea: 2400,
+				roofR: 38,
+				windowArea: 140,
+				windowU: 0.35,
+				windowSHGC: 0.35,
+				infiltrationClass: "average",
+				occupants: 4,
+				lighting: 2000,
+				appliances: 1600,
+				ductLocation: "unconditioned",
+				ductEfficiency: 0.85,
+				indoorTemp: 75,
+			};
 
 	const form = useForm<FormValues>({
-		defaultValues: {
-			area: 2400,
-			ceilingHeight: 8,
-			wallArea: 700,
-			wallR: 13,
-			roofArea: 2400,
-			roofR: 38,
-			windowArea: 140,
-			windowU: 0.35,
-			windowSHGC: 0.35,
-			infiltrationClass: "average",
-			occupants: 4,
-			lighting: 2000,
-			appliances: 1600,
-			ductLocation: "unconditioned",
-			ductEfficiency: 0.85,
-			indoorTemp: 75,
-		},
+		defaultValues,
 		validatorAdapter: zodValidator,
 		onSubmit: async ({ value }) => {
 			setIsCalculating(true);
@@ -143,6 +157,32 @@ export function InputWizard({
 		},
 	});
 
+	// Auto-save form state for unauthenticated users (debounced)
+	useEffect(() => {
+		if (isAuthenticated) return;
+
+		const unsubscribe = form.subscribe((state) => {
+			// Clear existing timeout
+			if (saveTimeoutRef.current) {
+				clearTimeout(saveTimeoutRef.current);
+			}
+
+			// Debounce save by 500ms
+			saveTimeoutRef.current = setTimeout(() => {
+				const formValues = state.values;
+				if (formValues) {
+					saveTemporaryFormState(formValues);
+				}
+			}, 500);
+		});
+
+		return () => {
+			unsubscribe();
+			if (saveTimeoutRef.current) {
+				clearTimeout(saveTimeoutRef.current);
+			}
+		};
+	}, [form, isAuthenticated]);
 
 	return (
 		<Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">

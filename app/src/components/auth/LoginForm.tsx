@@ -38,6 +38,7 @@ export function LoginForm() {
         if (result.error) {
           setError(result.error.message);
         } else {
+          // Migration will be handled by MigrationHandler component
           // Redirect after successful login
           navigate({ to: redirectTo });
         }
