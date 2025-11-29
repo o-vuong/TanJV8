@@ -33,10 +33,21 @@ export const authClient = createAuthClient({
 	plugins: [anonymousClient()],
 });
 
-// Export useSession directly from Better Auth
-// Components that use this should handle SSR themselves (check for window !== undefined)
-// or wrap usage in client-only components
-export const useSession = authClient.useSession;
+// Export useSession hook from Better Auth
+// Better Auth's useSession is a React hook that must be used on the client
+export const useSession = () => {
+	// Ensure we're on the client
+	if (typeof window === "undefined") {
+		return {
+			data: null,
+			isPending: true,
+			error: null,
+		};
+	}
+	
+	// Use the hook from the client
+	return authClient.useSession();
+};
 
 export const {
 	signIn,
