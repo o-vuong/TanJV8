@@ -11,5 +11,11 @@ export default defineConfig({
   },
   ssr: {
     external: ["@prisma/client"],
+    noExternal: [],
+  },
+  server: {
+    watch: {
+      ignored: ["**/routeTree.gen.ts"],
+    },
   },
 });
