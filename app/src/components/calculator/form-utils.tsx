@@ -176,7 +176,7 @@ function NumberInputField({
           }
         }}
           {...props}
-          className={cn("max-w-xs w-full", unit && "pr-12", props?.className)}
+          className={cn("max-w-[200px] w-full", unit && "pr-12", props?.className)}
         />
         {unit && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">
