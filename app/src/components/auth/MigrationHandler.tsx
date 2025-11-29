@@ -6,8 +6,25 @@ import { hasTemporaryData } from "../../lib/storage/temporary";
 /**
  * Component that handles migration of temporary calculations when user logs in
  * This should be included in the root layout or a component that's always rendered
+ * Client-only component - doesn't run during SSR
  */
 export function MigrationHandler() {
+	const [isClient, setIsClient] = useState(false);
+
+	// Ensure this only runs on the client
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	// Don't render anything during SSR
+	if (!isClient) {
+		return null;
+	}
+
+	return <MigrationHandlerClient />;
+}
+
+function MigrationHandlerClient() {
 	const { data: session } = useSession();
 	const isAuthenticated = !!session?.user;
 	const { migrate, isMigrating } = useMigrateTemporaryCalculations();
