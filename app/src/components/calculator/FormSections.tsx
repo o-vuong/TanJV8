@@ -300,7 +300,7 @@ export function InfiltrationSection({
           name="infiltrationClass"
           validators={{ onChange: fieldValidators.infiltrationClass }}
         >
-          {(field) => {
+          {(field: any) => {
             const error = field.state.meta.errors?.[0];
             const hasError = Boolean(error);
             const errorObject = hasError
@@ -399,7 +399,7 @@ export function DuctSystemSection({ form, fieldValidators }: FormSectionProps) {
           name="ductLocation"
           validators={{ onChange: fieldValidators.ductLocation }}
         >
-          {(field) => {
+          {(field: any) => {
             const error = field.state.meta.errors?.[0];
             const hasError = Boolean(error);
             const errorObject = hasError
