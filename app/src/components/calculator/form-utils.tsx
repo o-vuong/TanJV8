@@ -100,7 +100,10 @@ function NumberInputField({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={name}>
+        {label}
+        {unit && <span className="ml-2 text-sm font-normal text-gray-400">({unit})</span>}
+      </Label>
       <div className="relative">
         <Input
           id={name}
@@ -176,13 +179,8 @@ function NumberInputField({
           }
         }}
           {...props}
-          className={cn("max-w-[200px] w-full", unit && "pr-12", props?.className)}
+          className={cn("max-w-[140px] w-full", props?.className)}
         />
-        {unit && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">
-            {unit}
-          </span>
-        )}
       </div>
       {description && <p className="text-xs text-gray-400">{description}</p>}
       {field.state.meta.errors?.[0] && (
