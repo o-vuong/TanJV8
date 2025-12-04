@@ -4,6 +4,7 @@ import ChatArea from "@/components/demo.chat-area";
 
 export const Route = createFileRoute("/demo/db-chat")({
 	component: App,
+	ssr: false, // Client-side only due to useSyncExternalStore usage
 });
 
 function App() {

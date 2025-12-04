@@ -8,20 +8,25 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
-const schema = z
-	.object({
-		name: z.string().min(2, "Name must be at least 2 characters"),
-		email: z.string().email("Enter a valid email address"),
-		password: z.string().min(8, "Password must be at least 8 characters"),
-		confirmPassword: z.string(),
-		termsAccepted: z.literal(true, {
-			errorMap: () => ({ message: "You must accept the terms" }),
-		}),
-	})
-	.refine((value) => value.password === value.confirmPassword, {
+// Base schema for field-level validation
+const baseSchema = z.object({
+	name: z.string().min(2, "Name must be at least 2 characters"),
+	email: z.string().email("Enter a valid email address"),
+	password: z.string().min(8, "Password must be at least 8 characters"),
+	confirmPassword: z.string(),
+	termsAccepted: z.literal(true, {
+		errorMap: () => ({ message: "You must accept the terms" }),
+	}),
+});
+
+// Full schema with refinements for form-level validation
+const schema = baseSchema.refine(
+	(value) => value.password === value.confirmPassword,
+	{
 		path: ["confirmPassword"],
 		message: "Passwords do not match",
-	});
+	}
+);
 
 export function RegisterForm() {
 	const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
@@ -67,7 +72,7 @@ export function RegisterForm() {
 				form.handleSubmit();
 			}}
 		>
-			<form.Field name="name" validators={{ onChange: schema.shape.name }}>
+			<form.Field name="name" validators={{ onChange: baseSchema.shape.name }}>
 				{(field) => (
 					<div className="space-y-2">
 						<Label htmlFor={field.name}>Full Name</Label>
@@ -87,7 +92,7 @@ export function RegisterForm() {
 				)}
 			</form.Field>
 
-			<form.Field name="email" validators={{ onChange: schema.shape.email }}>
+			<form.Field name="email" validators={{ onChange: baseSchema.shape.email }}>
 				{(field) => (
 					<div className="space-y-2">
 						<Label htmlFor={field.name}>Email</Label>
@@ -111,7 +116,7 @@ export function RegisterForm() {
 			<div className="grid gap-4 sm:grid-cols-2">
 				<form.Field
 					name="password"
-					validators={{ onChange: schema.shape.password }}
+					validators={{ onChange: baseSchema.shape.password }}
 				>
 					{(field) => (
 						<div className="space-y-2">
@@ -135,7 +140,7 @@ export function RegisterForm() {
 
 				<form.Field
 					name="confirmPassword"
-					validators={{ onChange: schema.shape.confirmPassword }}
+					validators={{ onChange: baseSchema.shape.confirmPassword }}
 				>
 					{(field) => (
 						<div className="space-y-2">
@@ -160,7 +165,7 @@ export function RegisterForm() {
 
 			<form.Field
 				name="termsAccepted"
-				validators={{ onChange: schema.shape.termsAccepted }}
+				validators={{ onChange: baseSchema.shape.termsAccepted }}
 			>
 				{(field) => (
 					<label className="flex items-center gap-3 text-sm">
