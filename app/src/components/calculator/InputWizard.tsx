@@ -25,10 +25,6 @@ import { InfiltrationSection } from "./InfiltrationSection";
 import { InternalGainsSection } from "./InternalGainsSection";
 import { DuctSystemSection } from "./DuctSystemSection";
 import { ClimatePreferencesSection } from "./ClimatePreferencesSection";
-import {
-	DraggableSections,
-	SortableSection,
-} from "./DraggableSection";
 
 const schema = z.object({
 	area: z.coerce.number().positive("Area must be positive"),
@@ -79,16 +75,6 @@ export function InputWizard({
 	const [progress, setProgress] = useState<number | null>(null);
 	const [isCalculating, setIsCalculating] = useState(false);
 	const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-	// Section order state - default order
-	const [sectionOrder, setSectionOrder] = useState<string[]>([
-		"dimensions",
-		"envelope",
-		"infiltration",
-		"internal",
-		"ducts",
-		"climate",
-	]);
 
 	// Load saved form state for unauthenticated users
 	const savedFormState = loadTemporaryFormState();
@@ -214,71 +200,30 @@ export function InputWizard({
 				autoComplete="off"
 			>
 				<CardContent className="space-y-8 p-6">
-					<DraggableSections
-						sectionIds={sectionOrder}
-						onReorder={setSectionOrder}
-					>
-						{sectionOrder.map((sectionId) => {
-							switch (sectionId) {
-								case "dimensions":
-									return (
-										<SortableSection key={sectionId} id={sectionId}>
-											<BuildingDimensionsSection
-												form={form}
-												fieldValidators={fieldValidators}
-											/>
-										</SortableSection>
-									);
-								case "envelope":
-									return (
-										<SortableSection key={sectionId} id={sectionId}>
-											<BuildingEnvelopeSection
-												form={form}
-												fieldValidators={fieldValidators}
-											/>
-										</SortableSection>
-									);
-								case "infiltration":
-									return (
-										<SortableSection key={sectionId} id={sectionId}>
-											<InfiltrationSection
-												form={form}
-												fieldValidators={fieldValidators}
-											/>
-										</SortableSection>
-									);
-								case "internal":
-									return (
-										<SortableSection key={sectionId} id={sectionId}>
-											<InternalGainsSection
-												form={form}
-												fieldValidators={fieldValidators}
-											/>
-										</SortableSection>
-									);
-								case "ducts":
-									return (
-										<SortableSection key={sectionId} id={sectionId}>
-											<DuctSystemSection
-												form={form}
-												fieldValidators={fieldValidators}
-											/>
-										</SortableSection>
-									);
-								case "climate":
-									return (
-										<SortableSection key={sectionId} id={sectionId}>
-											<ClimatePreferencesSection
-												form={form}
-												fieldValidators={fieldValidators}
-											/>
-										</SortableSection>
-									);
-								default:
-									return null;
-							}
-						})}
-					</DraggableSections>
+					<BuildingDimensionsSection
+						form={form}
+						fieldValidators={fieldValidators}
+					/>
+					<BuildingEnvelopeSection
+						form={form}
+						fieldValidators={fieldValidators}
+					/>
+					<InfiltrationSection
+						form={form}
+						fieldValidators={fieldValidators}
+					/>
+					<InternalGainsSection
+						form={form}
+						fieldValidators={fieldValidators}
+					/>
+					<DuctSystemSection
+						form={form}
+						fieldValidators={fieldValidators}
+					/>
+					<ClimatePreferencesSection
+						form={form}
+						fieldValidators={fieldValidators}
+					/>
 
 					{error && (
 						<div className="p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 flex items-center gap-3">

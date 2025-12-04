@@ -1,0 +1,41 @@
+@media print {
+  /* Hide interactive elements */
+  .no-print, button, nav, footer { display: none !important; }
+
+  /* Show print-only content */
+  .print-only { display: block !important; }
+
+  /* Override dark theme for print */
+  body, * {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Remove shadows and gradients */
+  * {
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+
+  /* Page breaks */
+  .page-break-before { page-break-before: always; }
+  .page-break-avoid { page-break-inside: avoid; }
+
+  /* Professional table styling */
+  table {
+    border-collapse: collapse;
+    border: 1px solid #333;
+  }
+
+  th, td {
+    border: 1px solid #666;
+    padding: 8px;
+  }
+
+  /* Chart sizing */
+  .report-chart {
+    max-width: 500px;
+    height: 350px;
+    margin: 20px auto;
+  }
+}

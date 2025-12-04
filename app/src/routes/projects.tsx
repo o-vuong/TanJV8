@@ -26,7 +26,8 @@ export const Route = createFileRoute("/projects")({
 
 function ProjectsPage() {
   const { data: session } = useSession();
-  const { data: groups, isLoading } = useGroups();
+  const isAuthenticated = !!session?.user;
+  const { data: groups, isLoading } = useGroups({ enabled: isAuthenticated });
   const createGroup = useCreateGroup();
   const createProject = useCreateProject();
   const [showCreateGroup, setShowCreateGroup] = useState(false);

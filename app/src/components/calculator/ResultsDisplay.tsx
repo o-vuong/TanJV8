@@ -12,8 +12,10 @@ import {
   Thermometer,
   Save,
   Plus,
+  Printer,
+  Download,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -42,6 +44,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { PrintableReport } from "./PrintableReport";
+import type { ReportMetadata } from "./print-types";
+import { formatDate } from "./print-utils";
 
 interface ResultsDisplayProps {
 	inputs: ManualJInputs;
@@ -80,7 +85,8 @@ export function ResultsDisplay({
 	onStartNew,
 }: ResultsDisplayProps) {
 	const { data: session } = useSession();
-  const { data: groups } = useGroups();
+	const isAuthenticated = !!session?.user;
+  const { data: groups } = useGroups({ enabled: isAuthenticated });
   const createCalculation = useCreateCalculation();
   const createGroup = useCreateGroup();
   const createProject = useCreateProject();
@@ -93,6 +99,11 @@ export function ResultsDisplay({
   const [groupName, setGroupName] = useState("");
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
+  const [reportMetadata, setReportMetadata] = useState<ReportMetadata>({
+    reportDate: formatDate(new Date()),
+  });
+  const [showReportForm, setShowReportForm] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const selectedGroup = groups?.find((g) => g.id === selectedGroupId);
   const availableProjects = selectedGroup?.projects || [];
@@ -140,6 +151,12 @@ export function ResultsDisplay({
       setSelectedProjectId(newProject.id);
     } catch (error) {
       console.error("Failed to create project:", error);
+    }
+  };
+
+  const handlePrint = () => {
+    if (printRef.current) {
+      window.print();
     }
   };
 
@@ -361,6 +378,22 @@ export function ResultsDisplay({
             </Button>
           )}
           <Button
+            variant="outline"
+            onClick={() => setShowReportForm(true)}
+            className="border-slate-700 hover:bg-slate-800"
+          >
+            <Printer className="w-4 h-4 mr-2" />
+            Print Report
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowReportForm(true)}
+            className="border-slate-700 hover:bg-slate-800"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download PDF
+          </Button>
+          <Button
             onClick={onStartNew}
             className="px-8 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
           >
@@ -559,6 +592,92 @@ export function ResultsDisplay({
           </div>
         </div>
       )}
+
+      {/* Report Metadata Form Modal */}
+      {showReportForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 no-print">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-semibold text-white mb-4">Report Details</h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Company Name</Label>
+                  <Input
+                    value={reportMetadata.companyName || ""}
+                    onChange={(e) => setReportMetadata({ ...reportMetadata, companyName: e.target.value })}
+                    className="bg-slate-900 border-slate-600 text-white"
+                    placeholder="Optional"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-300">Prepared By</Label>
+                  <Input
+                    value={reportMetadata.preparedBy || ""}
+                    onChange={(e) => setReportMetadata({ ...reportMetadata, preparedBy: e.target.value })}
+                    className="bg-slate-900 border-slate-600 text-white"
+                    placeholder="Optional"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-gray-300">Project Name</Label>
+                <Input
+                  value={reportMetadata.projectName || ""}
+                  onChange={(e) => setReportMetadata({ ...reportMetadata, projectName: e.target.value })}
+                  className="bg-slate-900 border-slate-600 text-white"
+                  placeholder="Optional"
+                />
+              </div>
+              <div>
+                <Label className="text-gray-300">Project Address</Label>
+                <Input
+                  value={reportMetadata.projectAddress || ""}
+                  onChange={(e) => setReportMetadata({ ...reportMetadata, projectAddress: e.target.value })}
+                  className="bg-slate-900 border-slate-600 text-white"
+                  placeholder="Optional"
+                />
+              </div>
+              <div>
+                <Label className="text-gray-300">Prepared For</Label>
+                <Input
+                  value={reportMetadata.preparedFor || ""}
+                  onChange={(e) => setReportMetadata({ ...reportMetadata, preparedFor: e.target.value })}
+                  className="bg-slate-900 border-slate-600 text-white"
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="flex gap-2 justify-end pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowReportForm(false)}
+                  className="border-slate-600 text-gray-300"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowReportForm(false);
+                    handlePrint();
+                  }}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500"
+                >
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print / Save as PDF
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden print component */}
+      <div ref={printRef} className="hidden">
+        <PrintableReport
+          inputs={inputs}
+          results={results}
+          metadata={reportMetadata}
+        />
+      </div>
     </div>
   );
 }

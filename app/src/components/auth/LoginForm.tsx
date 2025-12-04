@@ -8,6 +8,7 @@ import { signIn } from "../../lib/auth/client";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { getErrorMessage } from "../calculator/form-utils";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -73,7 +74,7 @@ export function LoginForm() {
             />
             {field.state.meta.errors?.[0] && (
               <p className="text-sm text-destructive">
-                {field.state.meta.errors[0]}
+                {getErrorMessage(field.state.meta.errors[0])}
               </p>
             )}
           </div>
@@ -98,7 +99,7 @@ export function LoginForm() {
             />
             {field.state.meta.errors?.[0] && (
               <p className="text-sm text-destructive">
-                {field.state.meta.errors[0]}
+                {getErrorMessage(field.state.meta.errors[0])}
               </p>
             )}
           </div>

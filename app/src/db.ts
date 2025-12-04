@@ -5,9 +5,6 @@ declare global {
   var __prismaAvailable: boolean | undefined;
 }
 
-let prismaInstance: unknown | null = null;
-let prismaAvailable = globalThis.__prismaAvailable ?? null;
-
 // Create a mock model that returns empty results for common operations
 function createMockModel() {
   const notAvailableError = () => {
@@ -59,56 +56,42 @@ function createMockPrismaClient() {
   });
 }
 
-function createPrismaClient(): unknown {
-  // Return cached instance if available
-  if (prismaInstance) {
-    return prismaInstance;
-  }
+// Initialize Prisma client at module load time
+let prismaInstance: unknown;
 
-  // Return mock if we already know Prisma isn't available
-  if (prismaAvailable === false) {
-    prismaInstance = createMockPrismaClient();
-    return prismaInstance;
-  }
-
+// Check if we already have a cached instance
+if (globalThis.__prisma) {
+  prismaInstance = globalThis.__prisma;
+} else {
   try {
-    // Try to load Prisma
-    const prismaModule = require("@prisma/client");
-    const PrismaClientClass = prismaModule.PrismaClient;
+    // Try to load Prisma using dynamic import
+    const { PrismaClient } = await import("@prisma/client");
 
     // Try to create the client - this will throw if not generated
-    const client = new PrismaClientClass();
+    const client = new PrismaClient();
 
     // Try to extend with accelerate
     try {
-      const { withAccelerate } = require("@prisma/extension-accelerate");
+      const { withAccelerate } = await import("@prisma/extension-accelerate");
       prismaInstance = client.$extends(withAccelerate());
     } catch {
       // Accelerate extension not available, use basic client
       prismaInstance = client;
     }
 
-    prismaAvailable = true;
     globalThis.__prismaAvailable = true;
     globalThis.__prisma = prismaInstance;
 
-    return prismaInstance;
+    console.log("✓ Prisma client loaded successfully");
   } catch (error) {
     console.warn("Prisma client not available, using mock client:", (error as Error).message);
-    prismaAvailable = false;
     globalThis.__prismaAvailable = false;
     prismaInstance = createMockPrismaClient();
-    return prismaInstance;
   }
 }
 
-// Export a proxy that lazily initializes the client
-export const db = new Proxy({} as unknown, {
-  get(_target, prop) {
-    const client = createPrismaClient();
-    return (client as Record<string | symbol, unknown>)[prop];
-  },
-});
+// Export the initialized client
+export const db = prismaInstance;
 
 // Also export as prisma for backwards compatibility
 export const prisma = db;

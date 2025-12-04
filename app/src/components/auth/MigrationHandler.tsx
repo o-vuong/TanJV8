@@ -27,7 +27,7 @@ export function MigrationHandler() {
 function MigrationHandlerClient() {
 	const { data: session } = useSession();
 	const isAuthenticated = !!session?.user;
-	const { migrate, isMigrating } = useMigrateTemporaryCalculations();
+	const { migrate, isMigrating } = useMigrateTemporaryCalculations({ enabled: isAuthenticated });
 	const [hasMigrated, setHasMigrated] = useState(false);
 
 	useEffect(() => {

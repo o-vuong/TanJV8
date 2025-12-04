@@ -91,8 +91,8 @@ export async function migrateTemporaryCalculations(
  * Hook to migrate temporary calculations when user logs in
  * This should be used in a component that has access to the session
  */
-export function useMigrateTemporaryCalculations() {
-	const { data: groups, refetch: refetchGroups } = useGroups();
+export function useMigrateTemporaryCalculations(options?: { enabled?: boolean }) {
+	const { data: groups, refetch: refetchGroups } = useGroups({ enabled: options?.enabled ?? true });
 	const createGroup = useCreateGroup();
 	const createProject = useCreateProject();
 	const createCalculation = useCreateCalculation();

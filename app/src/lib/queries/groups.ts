@@ -40,7 +40,7 @@ export interface CreateProjectInput {
 }
 
 // Query hooks for groups
-export function useGroups() {
+export function useGroups(options?: { enabled?: boolean }) {
 	return useQuery<Group[]>({
 		queryKey: ["groups"],
 		queryFn: async () => {
@@ -48,6 +48,7 @@ export function useGroups() {
 			return data;
 		},
 		staleTime: 30 * 1000, // 30 seconds
+		enabled: options?.enabled ?? true,
 	});
 }
 
