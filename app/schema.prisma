@@ -102,6 +102,8 @@ model Calculation {
 
   @@unique([projectId, version])
   @@index([projectId])
+  @@index([archived])
+  @@index([createdAt(sort: Desc)])
 }
 
 model ClimateRef {
