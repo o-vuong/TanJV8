@@ -205,7 +205,7 @@ const INFILTRATION_EXPONENT = 0.65;
 
 function convertInfiltrationRate(
   acH50: number,
-  deltaPressure: number,
+  _deltaPressure: number,
   designDeltaP: number = 0.1
 ): number {
   // Indoor/outdoor pressure difference (in Pa)
@@ -227,7 +227,7 @@ export interface PsychrometricPoint {
 }
 
 // Magnus formula for humidity ratio
-function calculateHumidityRatio(dryBulb: number, wetBulb: number): number {
+function _calculateHumidityRatio(dryBulb: number, wetBulb: number): number {
   const Ws =
     (0.62198 * 6.112 * Math.exp((17.67 * wetBulb) / (243.5 + wetBulb))) /
     (101.325 - 6.112 * Math.exp((17.67 * wetBulb) / (243.5 + wetBulb)));
@@ -462,8 +462,8 @@ export class ManualJCalculator {
   private designIndoorTemp: number; // Indoor setpoint (°F)
   private designOutdoorHumidity: number; // Summer humidity (%)
   private designIndoorHumidity: number; // Indoor humidity (%)
-  private latitude: number;
-  private elevation: number;
+  private _latitude: number;
+  private _elevation: number;
   private safetyFactor: number; // Typically 1.1-1.15
 
   constructor(
@@ -481,8 +481,8 @@ export class ManualJCalculator {
     this.designIndoorTemp = designIndoorTemp;
     this.designOutdoorHumidity = designOutdoorHumidity;
     this.designIndoorHumidity = designIndoorHumidity;
-    this.latitude = latitude;
-    this.elevation = elevation;
+    this._latitude = latitude;
+    this._elevation = elevation;
     this.safetyFactor = safetyFactor;
   }
 
@@ -501,7 +501,7 @@ export class ManualJCalculator {
   ): number {
     const orientationMap: Record<
       string,
-      "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW"
+      "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | "H"
     > = {
       N: "N",
       NE: "NE",
