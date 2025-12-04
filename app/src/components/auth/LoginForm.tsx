@@ -73,7 +73,9 @@ export function LoginForm() {
             />
             {field.state.meta.errors?.[0] && (
               <p className="text-sm text-destructive">
-                {field.state.meta.errors[0]}
+                {typeof field.state.meta.errors[0] === 'string'
+                  ? field.state.meta.errors[0]
+                  : (field.state.meta.errors[0] as any)?.message || 'Invalid input'}
               </p>
             )}
           </div>
@@ -98,7 +100,9 @@ export function LoginForm() {
             />
             {field.state.meta.errors?.[0] && (
               <p className="text-sm text-destructive">
-                {field.state.meta.errors[0]}
+                {typeof field.state.meta.errors[0] === 'string'
+                  ? field.state.meta.errors[0]
+                  : (field.state.meta.errors[0] as any)?.message || 'Invalid input'}
               </p>
             )}
           </div>
