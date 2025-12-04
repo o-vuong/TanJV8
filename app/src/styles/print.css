@@ -1,14 +1,31 @@
 @media print {
-  /* Hide interactive elements */
-  .no-print, button, nav, footer { display: none !important; }
+  /* Hide all screen content */
+  .no-print,
+  button,
+  nav,
+  footer,
+  header,
+  aside {
+    display: none !important;
+  }
+
+  /* Show hidden print content */
+  .hidden {
+    display: block !important;
+    visibility: visible !important;
+  }
 
   /* Show print-only content */
-  .print-only { display: block !important; }
+  .print-only {
+    display: block !important;
+  }
 
   /* Override dark theme for print */
-  body, * {
+  body {
     background: white !important;
     color: black !important;
+    padding: 0;
+    margin: 0;
   }
 
   /* Remove shadows and gradients */
@@ -18,16 +35,23 @@
   }
 
   /* Page breaks */
-  .page-break-before { page-break-before: always; }
-  .page-break-avoid { page-break-inside: avoid; }
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .page-break-avoid {
+    page-break-inside: avoid;
+  }
 
   /* Professional table styling */
   table {
     border-collapse: collapse;
     border: 1px solid #333;
+    width: 100%;
   }
 
-  th, td {
+  th,
+  td {
     border: 1px solid #666;
     padding: 8px;
   }

@@ -155,9 +155,8 @@ export function ResultsDisplay({
   };
 
   const handlePrint = () => {
-    if (printRef.current) {
-      window.print();
-    }
+    // Simply trigger browser print - CSS will handle showing/hiding content
+    window.print();
   };
 
 	const breakdownData: BreakdownRow[] = [
@@ -210,7 +209,7 @@ export function ResultsDisplay({
 		results.breakdown.conduction.windows;
 
 	return (
-    <div className="space-y-6">
+    <div className="space-y-6 no-print">
       <Card className="border-slate-700 bg-gradient-to-br from-slate-900/50 to-slate-800/50">
         <CardHeader className="border-b border-slate-700 bg-slate-900/50">
           <CardTitle className="text-2xl flex items-center gap-3">
@@ -670,7 +669,7 @@ export function ResultsDisplay({
         </div>
       )}
 
-      {/* Hidden print component */}
+      {/* Print-only component - hidden on screen, shown when printing */}
       <div ref={printRef} className="hidden">
         <PrintableReport
           inputs={inputs}
