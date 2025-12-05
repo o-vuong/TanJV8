@@ -15,5 +15,8 @@
     "lint": "pnpm --recursive lint",
     "type-check": "pnpm --recursive type-check",
     "lighthouse": "pnpm --filter app lighthouse"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
   }
 }
